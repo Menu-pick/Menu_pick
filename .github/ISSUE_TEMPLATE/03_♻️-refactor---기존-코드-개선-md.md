@@ -1,0 +1,24 @@
+---
+name: 03_♻️-refactor---기존-코드-개선.md
+about: Describe this issue template's purpose here.
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+---
+name: "♻️ Refactor - 기존 코드 개선"
+about: 기존 코드를 구조 개선 및 리팩토링할 때 작성합니다
+title: 'refactor: '
+labels: 'refactor'
+assignees: ''
+
+---
+
+## ♻️ 리팩토링 목적
+> 어떤 코드를 왜 개선하는지 설명해주세요. (예: 성능 개선, 코드 구조화 등)
+
+## 🛠 작업 내용
+- [ ] Task 1
+- [ ] Task 2
