@@ -7,15 +7,6 @@ assignees: ''
 
 ---
 
----
-name: "✨ FeatureRequest - 새로운 기능 추가"
-about: 개발해야 하는 기능을 단위별로 명세합니다!
-title: 'feat: '
-labels: 'feat'
-assignees: ''
-
----
-
 ## 이슈 내용
 - 어떤 기능인지 상세히 설명해 주세요
 

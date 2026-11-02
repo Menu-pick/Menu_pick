@@ -7,15 +7,6 @@ assignees: ''
 
 ---
 
----
-name: "\U0001F41B BugReport + Fix - 버그 수정"
-about: 버그가 발생했을 때 사용합니다
-title: 'fix: '
-labels: 'fix'
-assignees: ''
-
----
-
 ## 버그 설명
 - 어떤 버그인지 자세히 적어 주세요
 
