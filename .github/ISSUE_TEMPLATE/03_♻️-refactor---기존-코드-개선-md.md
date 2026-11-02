@@ -2,7 +2,7 @@
 name: 03_♻️-refactor---기존-코드-개선.md
 about: Describe this issue template's purpose here.
 title: ''
-labels: ''
+labels: refactor
 assignees: ''
 
 ---

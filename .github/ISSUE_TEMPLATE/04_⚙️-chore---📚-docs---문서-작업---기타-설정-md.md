@@ -2,7 +2,7 @@
 name: "04_⚙️-chore---\U0001F4DA-docs---문서-작업---기타-설정.md"
 about: Describe this issue template's purpose here.
 title: ''
-labels: ''
+labels: chore
 assignees: ''
 
 ---

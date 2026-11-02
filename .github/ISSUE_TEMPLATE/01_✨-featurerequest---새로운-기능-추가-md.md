@@ -2,7 +2,7 @@
 name: 01_✨-featurerequest---새로운-기능-추가.md
 about: Describe this issue template's purpose here.
 title: ''
-labels: ''
+labels: feat
 assignees: ''
 
 ---
