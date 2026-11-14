@@ -4,8 +4,8 @@ import { localDate } from './mealStore'
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 // The Figma calendar snippet has no import/source mapping or installed counterpart.
 // Native controls preserve the design without introducing a second component library.
-export default function Calendar({ month, selected, onMonthChange, onSelect }: {
-  month: Date; selected: string; onMonthChange: (date: Date) => void; onSelect: (date: string) => void
+export default function Calendar({ month, selected, recordedDates = [], onMonthChange, onSelect }: {
+  month: Date; selected: string; recordedDates?: string[]; onMonthChange: (date: Date) => void; onSelect: (date: string) => void
 }) {
   const year = month.getFullYear()
   const monthIndex = month.getMonth()
@@ -25,8 +25,9 @@ export default function Calendar({ month, selected, onMonthChange, onSelect }: {
         const date = new Date(year, monthIndex, day)
         const key = localDate(date)
         const outside = day < 1 || day > dayCount
+        const recorded = recordedDates.includes(key)
         return <Button key={key} className={`calendar-day ${selected === key ? 'is-selected' : ''} ${outside ? 'is-outside' : ''}`}
-          aria-label={date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} aria-pressed={selected === key}
+          aria-label={`${date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}${recorded ? ', 식사 기록 있음' : ''}`} aria-pressed={selected === key} data-has-record={recorded || undefined}
           onClick={() => { if (outside) onMonthChange(new Date(date.getFullYear(), date.getMonth(), 1)); onSelect(key) }}>{date.getDate()}</Button>
       })}</div></div>
   </div>

@@ -35,26 +35,5 @@ export const assets = {
     "imgBasilShareBoxOutline": "/figma/history-imgBasilShareBoxOutline.svg",
     "imgEllipse8": "/figma/history-imgEllipse8.svg",
     "imgDashiconsArrowRightAlt2": "/figma/history-imgDashiconsArrowRightAlt2.svg"
-  },
-  "e04": {
-    "imgE04": "/figma/e04-imgE04.png",
-    "imgExceptionIllustration": "/figma/e04-imgExceptionIllustration.png",
-    "imgExceptionIconBubble": "/figma/e04-imgExceptionIconBubble.svg",
-    "imgExceptionIconClock": "/figma/e04-imgExceptionIconClock.svg",
-    "imgExceptionDivider": "/figma/e04-imgExceptionDivider.svg"
-  },
-  "e05": {
-    "imgE05": "/figma/e05-imgE05.png",
-    "imgExceptionIllustration": "/figma/e05-imgExceptionIllustration.png",
-    "imgExceptionIconBubble": "/figma/e05-imgExceptionIconBubble.svg",
-    "imgExceptionIconPin": "/figma/e05-imgExceptionIconPin.svg",
-    "imgExceptionDivider": "/figma/e05-imgExceptionDivider.svg"
-  },
-  "e06": {
-    "imgE06": "/figma/e06-imgE06.png",
-    "imgExceptionIllustration": "/figma/e06-imgExceptionIllustration.png",
-    "imgExceptionIconBubble": "/figma/e06-imgExceptionIconBubble.svg",
-    "imgExceptionIconWifi": "/figma/e06-imgExceptionIconWifi.svg",
-    "imgExceptionDivider": "/figma/e06-imgExceptionDivider.svg"
   }
 } as const
