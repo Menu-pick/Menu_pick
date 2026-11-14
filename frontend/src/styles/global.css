@@ -19,14 +19,14 @@ button, input {
   display: flow-root;
 }
 
-#root:has(> .mobile-layout > :is(.splash-page, .home-page, .room-create-page)) {
+#root:has(> .mobile-layout > :is(.splash-page, .home-page, .room-setup)) {
   min-height: 100dvh;
   display: grid;
   place-items: center;
   background: #eee;
 }
 
-.mobile-layout:has(> :is(.splash-page, .home-page, .room-create-page)) {
+.mobile-layout:has(> :is(.splash-page, .home-page, .room-setup)) {
   width: min(100%, 402px);
   max-width: none;
   height: min(874px, 100dvh);

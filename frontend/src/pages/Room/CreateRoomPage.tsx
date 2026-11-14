@@ -1,48 +1,89 @@
-import type { FormEvent } from 'react'
-import { Link } from 'react-router'
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router'
 import './CreateRoomPage.css'
 
-const categories = ['한식', '중식', '일식', '카페·디저트', '패스트푸드', '분식']
+const categories = ['한식', '중식', '일식', '카페,디저트', '패스트푸드', '분식']
+const mealModes = ['매장', '배달'] as const
+
+type RoomSettings = {
+  name: string
+  location: string
+  mealMode: typeof mealModes[number]
+  categories: string[]
+}
+
+let savedDraft: RoomSettings = { name: '', location: '', mealMode: '매장', categories: [] }
 
 export default function CreateRoomPage() {
+  const [settings, setSettings] = useState(savedDraft)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    // TODO: Send the room settings and selected candidate categories to the room creation API.
+    const name = settings.name.trim()
+    const location = settings.location.trim()
+    if (!name || name.length > 10 || !location) {
+      setError('방 이름과 식사 장소를 확인해 주세요.')
+      return
+    }
+
+    savedDraft = { ...settings, name, location }
+    // TODO: Create the room through the API and navigate with its returned ID.
+    void navigate('/room/demo/waiting', { state: { fromCreate: true } })
   }
 
   return (
-    <div className="room-create-page">
-      <header>
-        <Link to="/room/select" aria-label="방 만들기 선택 화면으로 돌아가기">←</Link>
+    <div className="room-setup room-create-page">
+      <header className="room-setup__header">
+        <Link to="/room/select" aria-label="방 만들기 선택 화면으로 돌아가기" />
         <h1>방 만들기</h1>
       </header>
       <form onSubmit={handleSubmit}>
         <label>
           방 이름
-          <input name="name" maxLength={10} required />
+          <input name="name" placeholder="10자입력해주세요." maxLength={10} required
+            value={settings.name} onChange={(event) => setSettings({ ...settings, name: event.target.value })} />
         </label>
         <label>
           식사 장소
-          <input name="location" required />
+          <input name="location" placeholder="장소를 선택해주세요." required
+            value={settings.location} onChange={(event) => setSettings({ ...settings, location: event.target.value })} />
         </label>
         <fieldset>
           <legend>식사 방식</legend>
           <div className="room-create-page__options">
-            <label><input type="radio" name="mealMode" value="dine-in" required /> 매장</label>
-            <label><input type="radio" name="mealMode" value="delivery" /> 배달</label>
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>음식 카테고리</legend>
-          <div className="room-create-page__options">
-            {categories.map((category) => (
-              <label key={category}>
-                <input type="checkbox" name="category" value={category} /> {category}
+            {mealModes.map((mode) => (
+              <label key={mode}>
+                <input type="radio" name="mealMode" checked={settings.mealMode === mode}
+                  onChange={() => setSettings({ ...settings, mealMode: mode })} />
+                {mode}
               </label>
             ))}
           </div>
         </fieldset>
-        <button type="submit">저장</button>
+        <fieldset>
+          <legend>음식 카테고리</legend>
+          <div className="room-create-page__options room-create-page__categories">
+            {categories.map((category) => (
+              <label key={category}>
+                <input type="checkbox" name="category" checked={settings.categories.includes(category)}
+                  onChange={(event) => {
+                    const checked = event.target.checked
+                    setSettings((current) => ({
+                      ...current,
+                      categories: checked ? [...current.categories, category] : current.categories.filter((item) => item !== category),
+                    }))
+                  }} />
+                {category}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <div className="room-setup__footer">
+          {error && <p role="alert">{error}</p>}
+          <button className="room-setup__primary" type="submit">변경사항 저장</button>
+        </div>
       </form>
     </div>
   )

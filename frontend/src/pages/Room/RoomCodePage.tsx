@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router'
 import submitArrow from '../../assets/icons/Vector.svg'
 import RoomSelectionLayout from './RoomSelectionLayout'
 
 export default function RoomCodePage() {
-  const [code, setCode] = useState('')
+  const [searchParams] = useSearchParams()
+  const [code, setCode] = useState(() => searchParams.get('code') ?? '')
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
