@@ -21,7 +21,7 @@ export default function RestaurantBottomSheet({ menuName = '쌀국수', ...props
   useEffect(() => {
     if (!selected && firstRestaurantId && !room.completedRecordId) select(roomId, firstRestaurantId)
   }, [selected, firstRestaurantId, room.completedRecordId, roomId, select])
-  return <BottomSheet {...props} showHandle className="meal-sheet restaurant-sheet" title="주변 식당">
+  return <BottomSheet {...props} showHandle dismissOnBackdrop className="meal-sheet restaurant-sheet" title="주변 식당">
     <p className="sheet-subtitle">{preview ? '주변 식당 예시 · 가까운 순' : `${menuName} 기준 · 가까운 순`}</p>
     <div className="restaurant-list" role="radiogroup" aria-label="추천 식당">
       {restaurants.map(restaurant => <div className="meal-card restaurant-card" key={restaurant.id}>

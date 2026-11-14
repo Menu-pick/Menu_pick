@@ -21,7 +21,7 @@ export default function VoteResultPage() {
     if (open) next.set('sheet', 'open'); else next.delete('sheet')
     return next
   })
-  return <MealScreen className={`result-page ${delivery ? 'delivery-result' : ''} ${expanded ? 'sheet-expanded' : ''}`} background={assets.result.imgChatGptImage20269150806211}>
+  return <MealScreen className={`result-page ${delivery ? 'delivery-result' : ''}`} background={assets.result.imgChatGptImage20269150806211}>
     <div className="result-scroll-content" role="region" aria-label={delivery ? '배달 메뉴 투표 결과' : '메뉴 투표 결과'} tabIndex={0}>
     <MealHeader title="메뉴 확정하기" onBack={() => navigate(`/room/${roomId}/vote${delivery ? '?mode=delivery' : ''}`)} />
     <section className="participants"><h2>참여자</h2><div className="participant-list">{room.participants.map(member => <div className="participant" key={member.id}>

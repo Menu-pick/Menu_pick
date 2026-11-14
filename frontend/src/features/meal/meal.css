@@ -71,12 +71,6 @@
 .result-collapsed-sheet h2{font-size:18px;line-height:24px}
 .result-collapsed-sheet p{margin-top:4px;color:var(--meal-muted);font-size:12px}
 .result-collapsed-sheet .meal-button{margin-top:24px}
-.sheet-expanded .participants{margin-top:-2px;margin-left:35px}
-.sheet-expanded .participant-list{margin-top:18px;margin-left:15px}
-.sheet-expanded .winner-card{margin-top:43px;height:183px;padding:45px 23px 17px 16px}
-.sheet-expanded .winner-copy{margin-top:2px}
-.sheet-expanded .winner-score{margin-top:18px}
-.sheet-expanded .winner-crown{left:-4px}
 .meal-sheet{position:fixed;inset:auto 0 max(0px,calc((100dvh - 874px) / 2));width:min(100%,402px);max-width:402px;max-height:calc(var(--app-height, 100dvh) - 80px);margin:0 auto;padding:28px 27px 23px;border:0;border-radius:28px 28px 0 0;background:#f7efe8;box-shadow:0 -4px 16px #4b2f241a;overflow-y:auto}
 .meal-sheet::backdrop{background:transparent}
 .meal-sheet:focus{outline:none}
@@ -119,7 +113,7 @@
 .history-overlay{--design-space:min(1px,calc(var(--app-height, 100dvh) / 874));position:absolute;inset:0;z-index:20}
 .history-sheet:focus{outline:none}
 .sheet-handle{pointer-events:none}
-.history-dismiss{position:absolute;inset:0;z-index:1;width:100%;height:100%;padding:0;border:0;background:transparent}
+.history-overlay .history-dismiss{position:absolute;inset:0;z-index:1;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:default}
 .history-sheet{position:absolute;z-index:2;top:calc(453 * var(--design-space));bottom:0;left:0;right:0;background:#f7efe8;border-radius:28px 28px 0 0;padding:16px 33px max(calc(26 * var(--design-space)),env(safe-area-inset-bottom));box-shadow:0 -4px 16px #4b2f241a;overflow-y:auto}
 .history-sheet.is-detail{top:calc(283 * var(--design-space));padding-top:calc(35 * var(--design-space))}
 .history-sheet:not(.is-detail):has(.calendar-day:nth-child(36)){top:calc(443 * var(--design-space))}
@@ -157,7 +151,6 @@
   .vote-card .menu-photo:not(.menu-pho){height:clamp(72px,calc(var(--app-height, 100dvh) - 554px),91px);width:clamp(59px,calc((var(--app-height, 100dvh) - 554px)*.8242),75px)}
   .vote-options{margin-top:12px}
   .voting-page .meal-footer{padding-top:16px}
-  .result-page.sheet-expanded .winner-card{height:163px;padding-top:25px}
   .result-page .participant-list{margin-top:14px}
   .result-page .winner-card{margin-top:20px;height:120px;padding-top:12px}
   .result-page .result-others{margin-top:16px;gap:10px;margin-bottom:16px}
