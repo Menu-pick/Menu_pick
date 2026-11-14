@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { useLocalRoom, useRoomStore } from '../../features/room/roomStore'
 import copyIcon from '../../assets/icons/copy.svg'
@@ -8,6 +8,7 @@ import './WaitingRoomPage.css'
 
 export default function WaitingRoomPage() {
   const [feedback, setFeedback] = useState('')
+  const mealStartRequested = useRef(false)
   const location = useLocation()
   const navigate = useNavigate()
   const { roomId = '' } = useParams()
@@ -16,12 +17,32 @@ export default function WaitingRoomPage() {
   const members = room?.members ?? []
 
   function startMeal() {
-    const result = useRoomStore.getState().beginMeal(roomId)
-    if (result !== 'ok') {
-      void navigate(result === 'waiting' ? '/error/e03' : '/error/e07', { state: { roomCode, returnTo: `/room/${encodeURIComponent(roomId)}/settings`, returnState: { startMeal: true } } })
+    if (mealStartRequested.current) return
+    mealStartRequested.current = true
+    if (!roomId || room?.id !== roomId) {
+      void navigate('/error/e01')
       return
     }
-    void navigate(`/room/${encodeURIComponent(roomId)}/roulette`)
+
+    const roomPath = `/room/${encodeURIComponent(roomId)}`
+    const errorState = { roomCode, returnTo: `${roomPath}/settings`, returnState: { startMeal: true } }
+    let result: ReturnType<ReturnType<typeof useRoomStore.getState>['beginMeal']>
+    try {
+      result = useRoomStore.getState().beginMeal(roomId)
+    } catch {
+      void navigate('/error/e07', { state: errorState })
+      return
+    }
+
+    if (result === 'missing') {
+      void navigate('/error/e01')
+      return
+    }
+    if (result !== 'ok') {
+      void navigate(result === 'waiting' ? '/error/e03' : '/error/e07', { state: errorState })
+      return
+    }
+    void navigate(`${roomPath}/roulette`)
   }
 
   async function copyCode() {
