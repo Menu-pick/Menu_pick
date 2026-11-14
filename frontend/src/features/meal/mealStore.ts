@@ -112,7 +112,8 @@ export const useMealStore = create<MealState>()(persist((set, get) => ({
     const state = get()
     const room = state.rooms[roomId] ?? emptyRoom
     if (!forceNew && room.started && !room.completedRecordId) return room.candidates.length === 3
-    const candidates = pickCandidates(state.menuCatalog, room.options.categories)
+    let candidates = pickCandidates(state.menuCatalog, room.options.categories)
+    if (room.demo && candidates.length === 0) candidates = pickCandidates(menus, [])
     if (candidates.length !== 3) return false
     const next: RoomMeal = { ...room, sessionId: crypto.randomUUID(), started: true, candidates,
       ballots: {}, restaurantId: '', completedRecordId: undefined,
