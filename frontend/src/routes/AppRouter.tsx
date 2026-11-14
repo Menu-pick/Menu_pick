@@ -33,6 +33,7 @@ export default function AppRouter() {
         <Route path="/room/:roomId/result" element={<VoteResultPage />} />
         <Route path="/room/:roomId/complete" element={<SelectionCompletePage />} />
         <Route path="/room/:roomId/history" element={<HistoryPage />} />
+        <Route path="/error/:code" element={<ErrorPage />} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>
     </BrowserRouter>
