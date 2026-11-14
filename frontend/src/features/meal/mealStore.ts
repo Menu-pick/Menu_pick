@@ -68,9 +68,16 @@ export function uniqueWinner(room: RoomMeal) {
   const ranking = rankedMenus(room)
   return ranking[0] && (!ranking[1] || ranking[0].count > ranking[1].count) ? ranking[0] : undefined
 }
-export function recommendedRestaurants(room: RoomMeal, catalog: Restaurant[] = restaurants) {
+export function restaurantRecommendations(room: RoomMeal, catalog: Restaurant[] = restaurants) {
   const winner = uniqueWinner(room)
-  return winner ? catalog.filter(item => item.menuIds.includes(winner.id) && item.location === room.options.location).sort((a, b) => a.meters - b.meters) : []
+  const matches = winner ? catalog.filter(item => item.menuIds.includes(winner.id) && item.location === room.options.location).sort((a, b) => a.meters - b.meters) : []
+  if (matches.length > 0) return { items: matches, preview: false }
+  // Keep the Figma restaurant screen available before the recommendation API is connected.
+  if (room.demo || !import.meta.env.VITE_API_BASE_URL) return { items: [...restaurants].sort((a, b) => a.meters - b.meters), preview: true }
+  return { items: [], preview: false }
+}
+export function recommendedRestaurants(room: RoomMeal, catalog: Restaurant[] = restaurants) {
+  return restaurantRecommendations(room, catalog).items
 }
 function pickCandidates(catalog: Menu[], categories: string[]) {
   const pool = [...new Map(catalog.filter(menu => categories.length === 0 || categories.includes('전체') || menu.categories.some(category => categories.includes(category))).map(menu => [menu.id, menu])).values()]

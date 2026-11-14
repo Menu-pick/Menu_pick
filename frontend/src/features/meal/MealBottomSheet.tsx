@@ -8,11 +8,17 @@ export type BottomSheetProps = {
   children?: ReactNode
   className?: string
   showHandle?: boolean
+  dismissOnBackdrop?: boolean
 }
 
-export default function BottomSheet({ open, onClose, title, children, className = '', showHandle = false }: BottomSheetProps) {
+export default function BottomSheet({ open, onClose, title, children, className = '', showHandle = false, dismissOnBackdrop = false }: BottomSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const pointerStartedOutside = useRef(false)
   const titleId = useId()
+  const isOutside = (x: number, y: number) => {
+    const bounds = dialogRef.current?.getBoundingClientRect()
+    return Boolean(bounds && (x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom))
+  }
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -30,12 +36,19 @@ export default function BottomSheet({ open, onClose, title, children, className 
       className={`bottom-sheet ${className}`}
       aria-labelledby={titleId}
       tabIndex={showHandle ? -1 : undefined}
+      onPointerDown={(event) => {
+        pointerStartedOutside.current = isOutside(event.clientX, event.clientY)
+      }}
+      onPointerUp={(event) => {
+        if (dismissOnBackdrop && pointerStartedOutside.current && isOutside(event.clientX, event.clientY)) onClose()
+        pointerStartedOutside.current = false
+      }}
       onCancel={(event) => {
         event.preventDefault()
         onClose()
       }}
     >
-      {showHandle && <Button className="sheet-handle" aria-label="닫기" onClick={onClose} />}
+      {showHandle && <span className="sheet-handle" aria-hidden="true" />}
       <h2 id={titleId}>{title}</h2>
       {children}
       {!showHandle && <Button onClick={onClose}>닫기</Button>}
