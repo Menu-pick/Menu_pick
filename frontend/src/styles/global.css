@@ -12,11 +12,31 @@ button, input {
 }
 
 .mobile-layout {
+  --app-height: min(874px, 100dvh);
   max-width: 480px;
   min-height: 100dvh;
   margin-inline: auto;
   padding: 1rem;
   display: flow-root;
+}
+
+#root:has(> .mobile-layout > :is(.splash-page, .home-page, .room-setup, .meal-screen)) {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: #eee;
+}
+
+.mobile-layout:has(> :is(.splash-page, .home-page, .room-setup, .meal-screen)) {
+  width: min(100%, 402px);
+  max-width: none;
+  height: min(874px, 100dvh);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden auto;
+  background: #fdf8f0;
 }
 
 .bottom-sheet {

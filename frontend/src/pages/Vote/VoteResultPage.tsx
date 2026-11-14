@@ -34,7 +34,10 @@ export default function VoteResultPage() {
     <div className="result-others">{others.map(menu => <article className="meal-card result-row" key={menu.id}><h2>{menu.name}</h2><strong>{menu.count}/{room.participants.length}</strong></article>)}</div>
     </div>
     <section className={`result-collapsed-sheet ${delivery ? 'delivery-summary' : ''}`}><span className="visual-handle" /><h2>{delivery ? '배달 주문' : '주변 식당'}</h2><p>{delivery ? '메뉴가 확정되면 각자 사용하는 배달앱에서 검색해 주문할 수 있어요.' : `${winner.name} 맛집 ${recommendations.length}곳을 찾았어요`}</p>
-      <MealButton disabled={!canConfirm || (!delivery && recommendations.length === 0)} onClick={() => setSheet(true)}>{delivery ? '메뉴 확정하기' : '추천 식당 보기'}</MealButton>
+      <MealButton disabled={!canConfirm} onClick={() => {
+        if (!delivery && recommendations.length === 0) { navigate('/error/e05', { state: { returnTo: `/room/${roomId}/result` } }); return }
+        setSheet(true)
+      }}>{delivery ? '메뉴 확정하기' : '추천 식당 보기'}</MealButton>
     </section>
     {delivery ? <DeliveryBottomSheet open={expanded} onClose={() => setSheet(false)} menuName={winner.name} /> : <RestaurantBottomSheet open={expanded} onClose={() => setSheet(false)} menuName={winner.name} />}
   </MealScreen>

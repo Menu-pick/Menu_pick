@@ -5,6 +5,8 @@ import Calendar from '../../features/meal/Calendar'
 import { Divider, MealScreen, Notice, useMealRoom, useShare } from '../../features/meal/MealUI'
 import { assets } from '../../features/meal/assets'
 import { localDate, parseLocalDate, useMealStore, useRoomMeal } from '../../features/meal/mealStore'
+import { useRestaurantHistory } from '../../features/meal/useRestaurantHistory'
+import { useLocalRoom } from '../../features/room/roomStore'
 
 // Figma: 13, 14
 export default function HistoryPage() {
@@ -14,8 +16,7 @@ export default function HistoryPage() {
   const [calendarOpen, setCalendarOpen] = useState(true)
   const headerRef = useRef<HTMLElement>(null)
   const closeCalendar = () => {
-    setCalendarOpen(false)
-    headerRef.current?.querySelector('button')?.focus()
+    navigate(`/room/${encodeURIComponent(roomId)}`, { replace: true })
   }
   useEffect(() => {
     if (!calendarOpen) return
@@ -31,7 +32,12 @@ export default function HistoryPage() {
   const detail = params.get('view') === 'day'
   const records = useMealStore(state => state.records)
   const room = useRoomMeal(roomId)
-  const recordedDates = [...new Set(records.filter(record => record.roomId === roomId).map(record => record.date))]
+  const remote = useRestaurantHistory(roomId, month, selected)
+  const localRoom = useLocalRoom(roomId)
+  useEffect(() => {
+    if (remote.error) navigate('/error/e06', { replace: true, state: { returnTo: `/room/${roomId}/history?view=day&date=${selected}` } })
+  }, [remote.error, navigate, roomId, selected])
+  const recordedDates = [...new Set([...remote.dates, ...records.filter(record => record.roomId === roomId).map(record => record.date)])]
   const dayRecords = records.filter(record => record.roomId === roomId && record.date === selected)
   const { share, notice } = useShare()
   const chooseDate = (date: string) => {
@@ -40,13 +46,15 @@ export default function HistoryPage() {
   const dateLabel = new Date(`${selected}T12:00:00`).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })
   return <MealScreen className="history-page" background={assets.history.img1}>
     <header className="history-header" ref={headerRef}><Button className="history-icon" aria-label="달력 열기" aria-expanded={calendarOpen} onClick={() => { setMonth(new Date(`${selectedMonth}-01T12:00:00`)); setCalendarOpen(true); setParams({ date: selected }) }}><img src={assets.history.imgGroup} alt="" /></Button>
-      <Button className="history-room" onClick={() => navigate(`/room/${roomId}/settings`)}>{room.options.name}<img src={assets.history.imgDashiconsArrowRightAlt2} alt="" /></Button>
+      <Button className="history-room" onClick={() => navigate(`/room/${roomId}/settings`)}>{localRoom?.settings.name ?? room.options.name}<img src={assets.history.imgDashiconsArrowRightAlt2} alt="" /></Button>
       <Button className="history-icon" aria-label="기록 공유하기" onClick={() => share(`${dateLabel} 밥픽 기록: ${dayRecords.map(record => `${record.menu} · ${record.restaurant}`).join(', ') || '선택한 식사 없음'}`)}><img src={assets.history.imgBasilShareBoxOutline} alt="" /></Button></header>
     <div className="meal-card history-prompt"><div className="history-cutlery"><img src={assets.history.imgRectangle1} alt="숟가락과 포크" /></div><Divider /><p>오늘은 뭘 먹을까요?</p></div>
     {calendarOpen && <><Button className="history-dismiss" aria-label="달력 밖 배경 눌러 닫기" onClick={closeCalendar} />
     <section className={`history-sheet ${detail ? 'is-detail' : ''}`} aria-label="이전 식사 기록"><Button className="history-handle" aria-label="달력 닫기" onClick={closeCalendar} />
       <Calendar month={month} selected={selected} recordedDates={recordedDates} onMonthChange={setMonth} onSelect={chooseDate} />
-      {detail && <div className="history-records"><h2>{dateLabel}</h2>{dayRecords.length ? dayRecords.map(record => <article className="meal-card history-record" key={record.id}><h3>{record.menu}</h3><p>{record.restaurant}</p></article>) : <p className="history-empty">이 날짜에는 아직 식사 기록이 없어요.</p>}</div>}
+      {detail && <div className="history-records"><h2>{dateLabel}</h2>{dayRecords.map(record => <article className="meal-card history-record" key={record.id}><h3>{record.menu}</h3><p>{record.restaurant}</p></article>)}
+        {remote.records.map(record => <article className="meal-card history-record" key={`remote-${record.id}`}><h3>{record.name}</h3><p>{record.address}</p></article>)}
+        {dayRecords.length === 0 && remote.records.length === 0 && <p className="history-empty">이 날짜에는 아직 식사 기록이 없어요.</p>}</div>}
     </section></>}<Notice>{notice}</Notice>
   </MealScreen>
 }

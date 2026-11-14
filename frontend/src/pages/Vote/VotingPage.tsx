@@ -25,6 +25,9 @@ export default function VotingPage() {
           aria-pressed={votes[menu.id] === choice} disabled={Boolean(room.completedRecordId)} onClick={() => vote(roomId, menu.id, choice)}>{choice === 'like' ? '좋아요' : '싫어요'}</Button>)}
       </div></div>
     </article>)}</div>
-    <div className="meal-footer"><MealButton disabled={!finished} onClick={() => navigate(`/room/${roomId}/result${modeSuffix}`)}>결과 확인하기</MealButton></div>
+    <div className="meal-footer"><MealButton onClick={() => {
+      if (!finished) { navigate('/error/e04', { state: { returnTo: `/room/${roomId}/vote${modeSuffix}` } }); return }
+      navigate(`/room/${roomId}/result${modeSuffix}`)
+    }}>결과 확인하기</MealButton></div>
   </MealScreen>
 }

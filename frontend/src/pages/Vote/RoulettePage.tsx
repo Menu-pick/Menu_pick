@@ -26,10 +26,14 @@ export default function RoulettePage() {
     const generated = startMeal(roomId)
     setFailed(!generated)
     setReady(false)
+    if (!generated) {
+      navigate('/error/e07', { replace: true, state: { returnTo: `/room/${roomId}/settings`, returnState: { startMeal: true } } })
+      return
+    }
     if (!generated || !imageLoaded) return
     const timer = window.setTimeout(() => setReady(true), 1500)
     return () => window.clearTimeout(timer)
-  }, [roomId, startMeal, imageLoaded])
+  }, [roomId, startMeal, imageLoaded, navigate])
   return <MealScreen className="slot-page">
     <MealHeader title="슬롯 추첨" />
     <div className={`meal-card slot-card ${ready ? 'is-ready' : !failed && imageLoaded ? 'is-spinning' : ''}`}>

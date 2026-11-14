@@ -84,7 +84,7 @@ function pickCandidates(catalog: Menu[], categories: string[]) {
 type MealState = {
   rooms: Record<string, RoomMeal>; records: MealRecord[];
   menuCatalog: Menu[]; restaurantCatalog: Restaurant[];
-  configureRoom: (roomId: string, options: Partial<RoomOptions>, participants?: Participant[]) => void;
+  configureRoom: (roomId: string, options: Partial<RoomOptions>, participants?: Participant[], demo?: boolean) => void;
   setCatalog: (menus: Menu[], restaurants: Restaurant[]) => void;
   startMeal: (roomId: string, forceNew?: boolean) => boolean;
   setCurrentParticipant: (roomId: string, participantId: string) => void;
@@ -94,10 +94,10 @@ type MealState = {
 }
 export const useMealStore = create<MealState>()(persist((set, get) => ({
   rooms: {}, records: [], menuCatalog: menus, restaurantCatalog: restaurants,
-  configureRoom: (roomId, options, participants) => set(state => {
+  configureRoom: (roomId, options, participants, demo = false) => set(state => {
     const room = state.rooms[roomId] ?? emptyRoom
     return { rooms: { ...state.rooms, [roomId]: { ...room, options: { ...room.options, ...options },
-      ...(participants ? { participants, currentParticipantId: participants.some(member => member.id === room.currentParticipantId) ? room.currentParticipantId : participants[0]?.id ?? '', ballots: {}, demo: false, started: false, completedRecordId: undefined } : {}),
+      ...(participants ? { participants, currentParticipantId: participants.some(member => member.id === room.currentParticipantId) ? room.currentParticipantId : participants[0]?.id ?? '', ballots: {}, demo, started: false, completedRecordId: undefined } : {}),
     } } }
   }),
   setCatalog: (menuCatalog, restaurantCatalog) => set({ menuCatalog, restaurantCatalog }),
@@ -108,7 +108,14 @@ export const useMealStore = create<MealState>()(persist((set, get) => ({
     const candidates = pickCandidates(state.menuCatalog, room.options.categories)
     if (candidates.length !== 3) return false
     const next: RoomMeal = { ...room, sessionId: crypto.randomUUID(), started: true, candidates,
-      ballots: room.demo ? demoBallots : {}, restaurantId: '', completedRecordId: undefined,
+      ballots: {}, restaurantId: '', completedRecordId: undefined,
+    }
+    if (room.demo) {
+      const preferred = candidates.find(menu => menu.id === 'pho') ?? candidates[0]
+      const otherMenus = candidates.filter(menu => menu.id !== preferred.id)
+      next.ballots = Object.fromEntries(room.participants.filter(member => member.id !== room.currentParticipantId).map((member, index) => [member.id,
+        Object.fromEntries(candidates.map(menu => [menu.id, menu.id === preferred.id || (menu.id === otherMenus[0]?.id && index < 2) || (menu.id === otherMenus[1]?.id && index === 0) ? 'like' : 'dislike'])),
+      ]))
     }
     next.restaurantId = recommendedRestaurants(next, state.restaurantCatalog)[0]?.id ?? ''
     set({ rooms: { ...state.rooms, [roomId]: next } })

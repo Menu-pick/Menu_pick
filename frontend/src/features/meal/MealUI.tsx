@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import Button from '../../components/common/Button'
 import { assets } from './assets'
@@ -29,6 +29,11 @@ export function Divider({ className = '' }: { className?: string }) {
 }
 export function useShare() {
   const [notice, setNotice] = useState('')
+  useEffect(() => {
+    if (!notice) return
+    const timer = window.setTimeout(() => setNotice(''), 3000)
+    return () => window.clearTimeout(timer)
+  }, [notice])
   const share = async (text: string, url = window.location.href) => {
     try {
       if (navigator.share) await navigator.share({ title: '밥픽', text, url })

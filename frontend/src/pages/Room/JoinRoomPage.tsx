@@ -1,4 +1,7 @@
-// Figma: 03-1
+import { Navigate, useLocation } from 'react-router'
+
+// Keep old invitation links working with the implemented code-entry screen.
 export default function JoinRoomPage() {
-  return <h1>Join Room Page</h1>
+  const { search } = useLocation()
+  return <Navigate to={`/room/select/code${search}`} replace />
 }
