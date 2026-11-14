@@ -1,0 +1,128 @@
+.room-waiting-page {
+  gap: clamp(12px, calc(100dvh - 750px), 27px);
+}
+
+.room-waiting-page > .room-setup__footer {
+  padding-top: 0;
+}
+
+.room-waiting-page__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #efdfd1;
+  border-radius: 22px;
+  box-shadow: 0 4px 10px rgba(91, 56, 33, 0.08);
+  text-align: center;
+}
+
+.room-waiting-page h1,
+.room-waiting-page h2 {
+  margin: 0;
+  font: 400 18px / 24px 'Jua', sans-serif;
+  letter-spacing: -0.1px;
+}
+
+.room-waiting-page__invite {
+  min-height: 200px;
+  position: relative;
+  padding-top: 22px;
+  background: #fffcf8;
+}
+
+.room-waiting-page__code {
+  position: relative;
+  margin-block: 25px 20px;
+  font: 400 42px / 48px 'Jua', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.room-waiting-page__code button {
+  position: absolute;
+  inset: 50% auto auto calc(100% + clamp(0px, 7vw, 28px));
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.room-waiting-page__share {
+  width: min(100%, 225px);
+  min-height: 41px;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(75, 47, 36, 0.08);
+  padding-inline: 22px;
+}
+
+.room-waiting-page__feedback {
+  position: absolute;
+  inset: auto 8px 0;
+  min-height: 18px;
+  margin: 6px 0 0;
+  color: #8a7265;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.room-waiting-page__members {
+  min-height: 294px;
+  padding-top: 24px;
+  margin-top: 13px;
+  background: #f7efe8;
+}
+
+.room-waiting-page__members h2 {
+  align-self: flex-start;
+}
+
+.room-waiting-page__members ul {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+  width: min(100%, 251px);
+  margin: 10px 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.room-waiting-page__members li {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+  font: 500 14px / 20px 'Noto Sans KR', sans-serif;
+}
+
+.room-waiting-page__members li img {
+  max-width: 100%;
+  height: auto;
+}
+
+.room-waiting-page__divider {
+  position: relative;
+  width: min(100%, 307px);
+  height: 35px;
+  margin-top: auto;
+  overflow: hidden;
+}
+
+.room-waiting-page__divider img {
+  /* Crop the transparent padding in the exported PNG. */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 144%;
+  height: 70px;
+  transform: translate(-50%, -50%);
+}
+
+.room-waiting-page__members p {
+  margin: 24px 0 16px;
+  color: #8a7265;
+  font: 400 12px / 18px 'Noto Sans KR', sans-serif;
+}
