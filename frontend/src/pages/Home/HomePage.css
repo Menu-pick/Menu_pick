@@ -1,0 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+.home-page {
+  --character-width: min(calc(100% - 40px), 321px);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fdf8f0;
+  color: #563a2c;
+  font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+}
+
+.home-page::before,
+.home-page::after {
+  position: absolute;
+  z-index: -1;
+  bottom: -52px;
+  width: 164px;
+  height: 104px;
+  border-radius: 50%;
+  background: rgba(248, 235, 221, 0.8);
+  pointer-events: none;
+  content: '';
+}
+
+.home-page::before { left: -56px; }
+.home-page::after { right: -56px; }
+
+.home-page__header {
+  width: min(calc(100% - 40px), 346px);
+  margin: 30px auto 0;
+}
+
+.home-page__logo {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  gap: 4px;
+}
+
+.home-page__logo img,
+.home-page__characters,
+.room-card__icon img {
+  object-fit: contain;
+}
+
+.home-page__header p {
+  min-height: 40px;
+  margin: 6px 0 0;
+  color: #8d5e45;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: -0.15px;
+}
+
+.home-page__rooms {
+  position: relative;
+  isolation: isolate;
+  margin-top: clamp(0px, calc(8dvh - 49px), 21px);
+  padding-bottom: 42px;
+}
+
+.home-page__hill {
+  position: absolute;
+  z-index: -1;
+  /* Preserve the home frame's 206px offset at 402 × 874. */
+  top: calc(78px + clamp(0px, calc(8dvh - 49px), 21px) + var(--character-width) / 3);
+  left: 50%;
+  width: 492px;
+  height: 126px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: #f2dfc9;
+  pointer-events: none;
+}
+
+.home-page__characters {
+  display: block;
+  width: var(--character-width);
+  height: auto;
+  aspect-ratio: 3 / 1;
+  margin: 0 auto;
+}
+
+.home-page__room-list {
+  display: grid;
+  gap: 12px;
+  width: min(calc(100% - 40px), 346px);
+  margin: 24px auto 0;
+  padding: 0;
+  list-style: none;
+}
+
+.room-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  height: 82px;
+  padding: 14px 20px 14px 15px;
+  border: 1px solid #efdfd1;
+  border-radius: 22px;
+  background: #fffdfc;
+  box-shadow: 0 4px 12px rgba(91, 56, 33, 0.08);
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .room-card:hover { background: #fff7ee; }
+}
+
+.room-card:active { background: #f8ebdd; }
+
+.room-card:focus-visible {
+  outline: 2px solid #8d5e45;
+  outline-offset: 3px;
+}
+
+.room-card__icon {
+  display: grid;
+  flex: 0 0 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f8ebdd;
+}
+
+.room-card__copy {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+
+.room-card__title,
+.room-card__description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-card__title {
+  font-family: 'Jua', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  color: #4d2f22;
+}
+
+.room-card__description {
+  color: #927b6d;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: -0.1px;
+}
+
+.room-card__arrow {
+  flex: 0 0 8px;
+  height: auto;
+}
+
+.home-page__actions {
+  display: grid;
+  justify-items: center;
+  margin-top: auto;
+  padding: 38px 16px 42px;
+}
+
+.home-page__create {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 1;
+  text-decoration: none;
+}
+
+.home-page__create-icon {
+  position: relative;
+  display: grid;
+  width: 74px;
+  height: 74px;
+  place-items: center;
+  border-radius: 50%;
+  background: #8d5e45;
+  box-shadow: 0 6px 14px rgba(91, 56, 33, 0.2);
+}
+
+.home-page__plus,
+.home-page__plus::after {
+  width: 26px;
+  height: 3px;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.home-page__plus::after {
+  display: block;
+  transform: rotate(90deg);
+  content: '';
+}
+
+.home-page__rays,
+.home-page__rays::before,
+.home-page__rays::after {
+  position: absolute;
+  width: 3px;
+  height: 9px;
+  border-radius: 2px;
+  background: #df9354;
+  pointer-events: none;
+}
+
+.home-page__rays {
+  top: -17px;
+  left: calc(50% - 1.5px);
+}
+
+.home-page__rays::before,
+.home-page__rays::after {
+  top: 4px;
+  content: '';
+}
+
+.home-page__rays::before {
+  left: -12px;
+  transform: rotate(-32deg);
+}
+
+.home-page__rays::after {
+  left: 12px;
+  transform: rotate(32deg);
+}

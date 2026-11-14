@@ -19,6 +19,25 @@ button, input {
   display: flow-root;
 }
 
+#root:has(> .mobile-layout > :is(.splash-page, .home-page, .room-create-page)) {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: #eee;
+}
+
+.mobile-layout:has(> :is(.splash-page, .home-page, .room-create-page)) {
+  width: min(100%, 402px);
+  max-width: none;
+  height: min(874px, 100dvh);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden auto;
+  background: #fdf8f0;
+}
+
 .bottom-sheet {
   position: fixed;
   inset: auto 0 0;

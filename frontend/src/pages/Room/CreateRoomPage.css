@@ -1,0 +1,73 @@
+.room-create-page {
+  max-width: 402px;
+  min-height: 100%;
+  margin-inline: auto;
+  padding: 24px 28px;
+  background: #fdf8f0;
+  color: #4d2f22;
+}
+
+.room-create-page header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.room-create-page header a {
+  color: inherit;
+  font-size: 24px;
+  text-decoration: none;
+}
+
+.room-create-page h1 {
+  margin: 0;
+  font: 400 24px 'Jua', sans-serif;
+}
+
+.room-create-page form {
+  display: grid;
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.room-create-page form > label {
+  display: grid;
+  gap: 8px;
+}
+
+.room-create-page form > label input {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #efdfd1;
+  border-radius: 12px;
+  background: #fffdfc;
+}
+
+.room-create-page fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.room-create-page__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.room-create-page__options label {
+  padding: 8px;
+  border-radius: 12px;
+  background: #f8ebdd;
+}
+
+.room-create-page button {
+  margin-top: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: 14px;
+  background: #8d5e45;
+  color: #fff;
+}
