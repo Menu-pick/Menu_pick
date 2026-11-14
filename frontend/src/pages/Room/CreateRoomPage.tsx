@@ -1,16 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import './CreateRoomPage.css'
+import { useRoomStore, type RoomSettings } from '../../features/room/roomStore'
 
 const categories = ['한식', '중식', '일식', '카페,디저트', '패스트푸드', '분식']
 const mealModes = ['매장', '배달'] as const
-
-type RoomSettings = {
-  name: string
-  location: string
-  mealMode: typeof mealModes[number]
-  categories: string[]
-}
 
 let savedDraft: RoomSettings = { name: '', location: '', mealMode: '매장', categories: [] }
 
@@ -29,8 +23,8 @@ export default function CreateRoomPage() {
     }
 
     savedDraft = { ...settings, name, location }
-    // TODO: Create the room through the API and navigate with its returned ID.
-    void navigate('/room/demo/waiting', { state: { fromCreate: true } })
+    const room = useRoomStore.getState().createRoom(savedDraft)
+    void navigate(`/room/${encodeURIComponent(room.id)}/waiting`, { state: { fromCreate: true } })
   }
 
   return (

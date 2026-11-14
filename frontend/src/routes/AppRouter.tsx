@@ -14,6 +14,7 @@ import VoteResultPage from '../pages/Vote/VoteResultPage'
 import SelectionCompletePage from '../pages/Complete/SelectionCompletePage'
 import HistoryPage from '../pages/History/HistoryPage'
 import ErrorPage from '../pages/Error/ErrorPage'
+import RoomBoundary from '../features/room/RoomBoundary'
 
 export default function AppRouter() {
   return (
@@ -25,14 +26,16 @@ export default function AppRouter() {
         <Route path="/room/select/code" element={<RoomCodePage />} />
         <Route path="/room/create" element={<CreateRoomPage />} />
         <Route path="/room/join" element={<JoinRoomPage />} />
-        <Route path="/room/:roomId/waiting" element={<WaitingRoomPage />} />
-        <Route path="/room/:roomId" element={<RoomDetailPage />} />
-        <Route path="/room/:roomId/settings" element={<RoomSettingsPage />} />
-        <Route path="/room/:roomId/roulette" element={<RoulettePage />} />
-        <Route path="/room/:roomId/vote" element={<VotingPage />} />
-        <Route path="/room/:roomId/result" element={<VoteResultPage />} />
-        <Route path="/room/:roomId/complete" element={<SelectionCompletePage />} />
-        <Route path="/room/:roomId/history" element={<HistoryPage />} />
+        <Route path="/room/:roomId" element={<RoomBoundary />}>
+          <Route index element={<RoomDetailPage />} />
+          <Route path="waiting" element={<WaitingRoomPage />} />
+          <Route path="settings" element={<RoomSettingsPage />} />
+          <Route path="roulette" element={<RoulettePage />} />
+          <Route path="vote" element={<VotingPage />} />
+          <Route path="result" element={<VoteResultPage />} />
+          <Route path="complete" element={<SelectionCompletePage />} />
+          <Route path="history" element={<HistoryPage />} />
+        </Route>
         <Route path="/error/:code" element={<ErrorPage />} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>

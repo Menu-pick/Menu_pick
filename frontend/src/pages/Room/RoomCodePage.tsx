@@ -1,17 +1,24 @@
 import { useState, type FormEvent } from 'react'
-import { useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
+import { useRoomStore } from '../../features/room/roomStore'
 import submitArrow from '../../assets/icons/Vector.svg'
 import RoomSelectionLayout from './RoomSelectionLayout'
 
 export default function RoomCodePage() {
   const [searchParams] = useSearchParams()
   const [code, setCode] = useState(() => searchParams.get('code') ?? '')
+  const navigate = useNavigate()
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const roomCode = code.trim()
     if (!roomCode) return
-    // TODO: Submit roomCode via the join API and show a field error for invalid or expired codes.
+    const room = useRoomStore.getState().joinByCode(roomCode)
+    if (!room) {
+      void navigate('/error/e02', { state: { returnTo: `/room/select/code?code=${encodeURIComponent(roomCode)}` } })
+      return
+    }
+    void navigate(`/room/${encodeURIComponent(room.id)}/waiting`)
   }
 
   return (

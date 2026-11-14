@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import calendar from '../../assets/icons/akar-icons_calendar.svg'
 import share from '../../assets/icons/basil_share-box-outline.svg'
@@ -8,7 +8,7 @@ import { getRoomSettings, RoomTitle } from './ExistingRoom'
 import './CreateRoomPage.css'
 import './ExistingRoom.css'
 
-export default function RoomDetailPage() {
+export default function RoomDetailPage({ overlay }: { overlay?: ReactNode }) {
   const { roomId = '' } = useParams()
   const base = `/room/${encodeURIComponent(roomId)}`
   const settings = getRoomSettings(roomId)
@@ -30,24 +30,25 @@ export default function RoomDetailPage() {
   }
 
   return (
-    <div className="room-setup existing-room">
-      <header className="existing-room__header">
+    <div className={`room-setup existing-room${overlay ? ' existing-room--overlay' : ''}`}>
+      <header className="existing-room__header" inert={Boolean(overlay)}>
         <Link to={`${base}/history`} aria-label="식사 기록"><img src={calendar} alt="" /></Link>
         <RoomTitle name={name} to={`${base}/settings`} />
         <button type="button" aria-label="방 링크 공유" onClick={shareRoom}><img src={share} alt="" /></button>
       </header>
-      <p className="existing-room__feedback" role="status">{feedback}</p>
-      <section className="existing-room__card">
+      <p className="existing-room__feedback" role="status" inert={Boolean(overlay)}>{feedback}</p>
+      <section className="existing-room__card" inert={Boolean(overlay)}>
         <div className="existing-room__utensils" aria-hidden="true">
           <img src={utensils} alt="" />
         </div>
         <div className="existing-room__divider"><img src={divider} alt="" /></div>
         <p>오늘은 뭘 먹을까요?</p>
       </section>
-      <div className="room-setup__footer">
+      <div className="room-setup__footer" inert={Boolean(overlay)}>
         <Link className="room-setup__primary existing-room__primary" to={`${base}/settings`}
           state={{ startMeal: true }}>새로운 식사 선택하기</Link>
       </div>
+      {overlay}
     </div>
   )
 }

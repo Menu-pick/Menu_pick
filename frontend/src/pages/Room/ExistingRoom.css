@@ -2,6 +2,11 @@
   padding-block: 27px;
 }
 
+.existing-room--overlay {
+  position: relative;
+  height: 100%;
+}
+
 .existing-room__header {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) 28px;

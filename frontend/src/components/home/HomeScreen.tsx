@@ -3,13 +3,9 @@ import { Link } from 'react-router'
 import logoBowl from '../../assets/images/LogoBowl.svg'
 import logoWord from '../../assets/images/LogoWord.svg'
 import characters from '../../assets/images/home-characters.png'
-import RoomCard, { type RoomCardProps } from './RoomCard'
+import RoomCard from './RoomCard'
+import { useRoomStore } from '../../features/room/roomStore'
 import '../../pages/Home/HomePage.css'
-
-const rooms: RoomCardProps[] = [
-  { id: '1', title: '덕성 멋사 뭐 먹지?', location: '덕성여대 근처', participantCount: 4 },
-  { id: '2', title: '팀 회식 메뉴 정하기', location: '강남역 근처', participantCount: 6 },
-]
 
 type HomeScreenProps = {
   slogan: ReactNode
@@ -19,6 +15,7 @@ type HomeScreenProps = {
 }
 
 export default function HomeScreen({ slogan, createLink, children, className }: HomeScreenProps) {
+  const rooms = useRoomStore(state => state.rooms)
   return (
     <div className={className ? `home-page ${className}` : 'home-page'}>
       <div className="home-page__hill" aria-hidden="true" />
@@ -33,8 +30,8 @@ export default function HomeScreen({ slogan, createLink, children, className }: 
       <section className="home-page__rooms" aria-label="참여 중인 방">
         <img className="home-page__characters" src={characters} alt="" />
         <ul className="home-page__room-list">
-          {rooms.map((room) => (
-            <li key={room.id}><RoomCard {...room} /></li>
+          {Object.values(rooms).filter(room => !room.hidden).map((room) => (
+            <li key={room.id}><RoomCard id={room.id} title={room.settings.name} location={room.settings.location} participantCount={room.members.length} /></li>
           ))}
         </ul>
       </section>

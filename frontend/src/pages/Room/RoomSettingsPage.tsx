@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import cancel from '../../assets/icons/iconoir_xmark-circle.svg'
 import check from '../../assets/icons/akar-icons_circle-check.svg'
-import { getRoomSettings, RoomTitle, savedRoomSettings } from './ExistingRoom'
+import { getRoomSettings, RoomTitle } from './ExistingRoom'
+import { useRoomStore } from '../../features/room/roomStore'
 import './CreateRoomPage.css'
 import './ExistingRoom.css'
 
@@ -30,8 +31,13 @@ function RoomSettingsForm({ roomId }: { roomId: string }) {
       return
     }
     const updatedSettings = { ...settings, name, location }
-    savedRoomSettings.set(roomId, updatedSettings)
+    useRoomStore.getState().saveSettings(roomId, updatedSettings)
     if (state?.startMeal === true) {
+      const result = useRoomStore.getState().beginMeal(roomId)
+      if (result !== 'ok') {
+        void navigate(result === 'waiting' ? '/error/e03' : '/error/e07', { state: { returnTo: `${base}/settings`, returnState: { startMeal: true }, roomCode: useRoomStore.getState().rooms[roomId]?.code } })
+        return
+      }
       void navigate(`${base}/roulette`, {
         replace: true,
         state: { existingRoomSettings: updatedSettings },

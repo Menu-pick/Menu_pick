@@ -33,9 +33,19 @@ function ExceptionScreen({ variant }: { variant: keyof typeof exceptions }) {
   const navigate = useNavigate()
   const { state } = useLocation()
   const [feedback, setFeedback] = useState('')
+  const returnTo = typeof state?.returnTo === 'string' && state.returnTo.startsWith('/') && !state.returnTo.startsWith('//') && !state.returnTo.startsWith('/error/')
+    ? state.returnTo as string : undefined
 
   async function handleAction() {
     if (variant !== 'e03') {
+      if (variant === 'e06' && !navigator.onLine) {
+        setFeedback('아직 인터넷에 연결되지 않았어요. 연결 상태를 확인해주세요.')
+        return
+      }
+      if (returnTo) {
+        void navigate(returnTo, { replace: true, state: state?.returnState })
+        return
+      }
       if (window.history.state?.idx > 0) void navigate(-1)
       else void navigate('/home', { replace: true })
       return
@@ -77,7 +87,7 @@ function ExceptionScreen({ variant }: { variant: keyof typeof exceptions }) {
       <footer className="exception-page__footer">
         {feedback && <p className="exception-page__hint" role="status">{feedback}</p>}
         {'to' in screen
-          ? <Link className="exception-page__action" to={screen.to}>{screen.label}</Link>
+          ? <Link className="exception-page__action" to={returnTo ?? screen.to}>{screen.label}</Link>
           : <button className="exception-page__action" type="button" onClick={handleAction}>{screen.label}</button>}
       </footer>
     </div>

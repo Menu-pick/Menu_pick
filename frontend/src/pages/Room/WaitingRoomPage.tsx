@@ -1,19 +1,28 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import { useLocalRoom, useRoomStore } from '../../features/room/roomStore'
 import copyIcon from '../../assets/icons/copy.svg'
 import forkSpoon from '../../assets/icons/ForkSpoon.png'
-import avatar from '../../assets/images/MemberAvaterGroup.svg'
 import './CreateRoomPage.css'
 import './WaitingRoomPage.css'
-
-// TODO: Load the actual room code and member list by room ID.
-const roomCode = 'B4P1K'
-const members = [1, 2, 3, 4].map((id) => ({ id, name: '박채희' }))
 
 export default function WaitingRoomPage() {
   const [feedback, setFeedback] = useState('')
   const location = useLocation()
   const navigate = useNavigate()
+  const { roomId = '' } = useParams()
+  const room = useLocalRoom(roomId)
+  const roomCode = room?.code ?? ''
+  const members = room?.members ?? []
+
+  function startMeal() {
+    const result = useRoomStore.getState().beginMeal(roomId)
+    if (result !== 'ok') {
+      void navigate(result === 'waiting' ? '/error/e03' : '/error/e07', { state: { roomCode, returnTo: `/room/${encodeURIComponent(roomId)}/settings`, returnState: { startMeal: true } } })
+      return
+    }
+    void navigate(`/room/${encodeURIComponent(roomId)}/roulette`)
+  }
 
   async function copyCode() {
     try {
@@ -69,7 +78,7 @@ export default function WaitingRoomPage() {
         <ul>
           {members.map((member) => (
             <li key={member.id}>
-              <img src={avatar} alt="" width="53" height="53" />
+              <img src={member.image} alt="" width="53" height="53" />
               <span>{member.name}</span>
             </li>
           ))}
@@ -80,8 +89,7 @@ export default function WaitingRoomPage() {
         <p>친구들이 모였다면 메뉴후보를 뽑을까요?</p>
       </section>
       <div className="room-setup__footer">
-        {/* TODO: Link to the room roulette once the menu candidate page is implemented. */}
-        <button className="room-setup__primary" type="button" disabled>메뉴 후보 뽑기</button>
+        <button className="room-setup__primary" type="button" onClick={startMeal}>메뉴 후보 뽑기</button>
       </div>
     </div>
   )

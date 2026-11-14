@@ -12,6 +12,7 @@ button, input {
 }
 
 .mobile-layout {
+  --app-height: min(874px, 100dvh);
   max-width: 480px;
   min-height: 100dvh;
   margin-inline: auto;
@@ -19,14 +20,14 @@ button, input {
   display: flow-root;
 }
 
-#root:has(> .mobile-layout > :is(.splash-page, .home-page, .room-setup)) {
+#root:has(> .mobile-layout > :is(.splash-page, .home-page, .room-setup, .meal-screen)) {
   min-height: 100dvh;
   display: grid;
   place-items: center;
   background: #eee;
 }
 
-.mobile-layout:has(> :is(.splash-page, .home-page, .room-setup)) {
+.mobile-layout:has(> :is(.splash-page, .home-page, .room-setup, .meal-screen)) {
   width: min(100%, 402px);
   max-width: none;
   height: min(874px, 100dvh);
