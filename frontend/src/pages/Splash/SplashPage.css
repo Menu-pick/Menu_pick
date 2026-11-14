@@ -1,0 +1,19 @@
+.splash-page {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  background: #fdf8f0;
+}
+
+.splash-page__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(255px, 80%);
+}
+
+.splash-page__logo img {
+  height: auto;
+  min-width: 0;
+  object-fit: contain;
+}

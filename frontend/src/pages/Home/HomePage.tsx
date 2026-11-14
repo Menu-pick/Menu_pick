@@ -1,4 +1,5 @@
-// Figma: 02, 03
+import HomeScreen from '../../components/home/HomeScreen'
+
 export default function HomePage() {
-  return <h1>Home Page</h1>
+  return <HomeScreen slogan="후보는 가볍게, 결정은 함께" createLink="/room/select" />
 }

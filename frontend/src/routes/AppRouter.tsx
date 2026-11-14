@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router'
 import SplashPage from '../pages/Splash/SplashPage'
 import HomePage from '../pages/Home/HomePage'
+import RoomSelectPage from '../pages/Room/RoomSelectPage'
+import RoomCodePage from '../pages/Room/RoomCodePage'
 import CreateRoomPage from '../pages/Room/CreateRoomPage'
 import JoinRoomPage from '../pages/Room/JoinRoomPage'
 import WaitingRoomPage from '../pages/Room/WaitingRoomPage'
@@ -19,6 +21,8 @@ export default function AppRouter() {
       <Routes>
         <Route path="/" element={<SplashPage />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/room/select" element={<RoomSelectPage />} />
+        <Route path="/room/select/code" element={<RoomCodePage />} />
         <Route path="/room/create" element={<CreateRoomPage />} />
         <Route path="/room/join" element={<JoinRoomPage />} />
         <Route path="/room/:roomId/waiting" element={<WaitingRoomPage />} />
