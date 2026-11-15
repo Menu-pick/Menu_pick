@@ -10,10 +10,10 @@ import java.util.List;
 
 public record MealSessionResponse(
 
-        @Schema(description = "식사 세션 ID")
+        @Schema(description = "식사 세션 ID", example = "1")
         Long mealSessionId,
 
-        @Schema(description = "방 ID")
+        @Schema(description = "방 ID", example = "1")
         Long roomId,
 
         @Schema(description = "진행 상태")

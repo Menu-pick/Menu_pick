@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public record MeResponse(
 
-        @Schema(description = "참여자 ID")
+        @Schema(description = "참여자 ID", example = "1")
         Long participantId,
 
         @Schema(
@@ -14,7 +14,7 @@ public record MeResponse(
         )
         String participantToken,
 
-        @Schema(description = "닉네임")
+        @Schema(description = "닉네임", example = "서연")
         String nickname
 ) {
     public static MeResponse from(Participant participant) {

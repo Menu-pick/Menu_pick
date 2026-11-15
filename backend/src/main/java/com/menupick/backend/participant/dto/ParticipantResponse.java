@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 
 public record ParticipantResponse(
 
-        @Schema(description = "참여자 ID")
+        @Schema(description = "참여자 ID", example = "1")
         Long participantId,
 
-        @Schema(description = "닉네임")
+        @Schema(description = "닉네임", example = "서연")
         String nickname,
 
         @Schema(description = "입장 시각")

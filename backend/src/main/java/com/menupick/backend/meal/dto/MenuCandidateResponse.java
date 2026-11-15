@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public record MenuCandidateResponse(
 
-        @Schema(description = "메뉴 ID")
+        @Schema(description = "메뉴 ID", example = "11")
         Long menuId,
 
         @Schema(description = "메뉴명", example = "쌀국수")

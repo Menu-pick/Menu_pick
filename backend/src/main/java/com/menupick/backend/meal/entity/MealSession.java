@@ -66,6 +66,11 @@ public class MealSession {
         }
     }
 
+    // 후보가 마음에 들지 않거나 동점일 때 후보를 다시 뽑습니다. (기존 투표는 초기화)
+    public void replaceCandidates(Collection<Menu> newCandidates) {
+        this.candidates = new ArrayList<>(newCandidates);
+    }
+
     // 투표 결과로 메뉴를 확정합니다. (식사 기록의 기준이 됩니다)
     public void confirm(Menu menu) {
         this.confirmedMenu = menu;
