@@ -88,6 +88,63 @@ public class RoomService {
         );
     }
 
+    // 방 설정 변경 (명세서 12·13번)
+    @Transactional
+    public RoomJoinResponse update(Long roomId, RoomUpdateRequest request) {
+        Room room = getRoomOrThrow(roomId);
+
+        Participant me = getParticipantOrThrow(roomId, request.participantToken());
+
+        String nickname = request.nickname().trim();
+
+        // 닉네임을 바꾸는 경우에만 방 안에서 중복인지 확인한다.
+        if (!me.getNickname().equals(nickname)
+                && participantRepository.existsByRoomIdAndNickname(roomId, nickname)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "이미 사용 중인 닉네임이에요. 다른 닉네임을 입력해주세요."
+            );
+        }
+
+        me.changeNickname(nickname);
+
+        room.update(
+                request.name().trim(),
+                request.placeId(),
+                request.placeName(),
+                request.address(),
+                request.latitude(),
+                request.longitude(),
+                request.mealType(),
+                request.categories()
+        );
+
+        return new RoomJoinResponse(
+                RoomResponse.from(
+                        room,
+                        participantRepository.countByRoomId(roomId)
+                ),
+                MeResponse.from(me)
+        );
+    }
+
+    private Participant getParticipantOrThrow(Long roomId, String token) {
+        Participant participant = participantRepository.findByToken(token)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "참여 정보를 확인할 수 없어요. 다시 참여해주세요."
+                ));
+
+        if (!participant.getRoomId().equals(roomId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "이 방의 참여자가 아니에요."
+            );
+        }
+
+        return participant;
+    }
+
     // 방 조회
     @Transactional(readOnly = true)
     public RoomResponse get(Long roomId) {
