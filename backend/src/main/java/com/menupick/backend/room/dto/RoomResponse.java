@@ -42,10 +42,13 @@ public record RoomResponse(
         @Schema(description = "기준 위치 경도")
         Double longitude,
 
+        @Schema(description = "참여 인원 수")
+        long participantCount,
+
         @Schema(description = "방 생성 일시")
         LocalDateTime createdAt
 ) {
-    public static RoomResponse from(Room room) {
+    public static RoomResponse from(Room room, long participantCount) {
         return new RoomResponse(
                 room.getId(),
                 room.getCode(),
@@ -59,6 +62,7 @@ public record RoomResponse(
                 room.getAddress(),
                 room.getLatitude(),
                 room.getLongitude(),
+                participantCount,
                 room.getCreatedAt()
         );
     }
