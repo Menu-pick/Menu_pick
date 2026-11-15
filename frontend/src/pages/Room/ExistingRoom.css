@@ -15,6 +15,23 @@
   gap: 8px;
 }
 
+.existing-room__header--detail {
+  grid-template-columns: repeat(2, 28px) minmax(0, 1fr) 64px;
+}
+
+.existing-room__header--detail > button {
+  justify-self: end;
+}
+
+.existing-room__back::before {
+  width: 13px;
+  height: 13px;
+  border-left: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  content: '';
+}
+
 .existing-room__header > :is(a, button):not(.existing-room__title) {
   display: grid;
   width: 28px;
@@ -23,12 +40,18 @@
   padding: 0;
   border: 0;
   background: transparent;
+  color: inherit;
   cursor: pointer;
 }
 
 .existing-room__header > :is(a, button):not(.existing-room__title) img {
   width: 24px;
   height: 24px;
+}
+
+.existing-room__header--detail > a.existing-room__calendar img {
+  width: 20px;
+  height: 20px;
 }
 
 .existing-room__title {
@@ -57,6 +80,10 @@
   white-space: nowrap;
 }
 
+.existing-room__header--detail .existing-room__title {
+  width: min(calc(100% - 24px), 219px);
+}
+
 .existing-room__title img {
   flex-shrink: 0;
   filter: brightness(0);
@@ -75,7 +102,7 @@
   flex-direction: column;
   align-items: center;
   min-height: 284px;
-  margin-top: clamp(32px, calc(100dvh - 460px), 133px);
+  margin-top: clamp(32px, calc(100dvh - 520px), 133px);
   padding: 42px 12px 24px;
   border: 1px solid #efdfd1;
   border-radius: 22px;
@@ -125,6 +152,25 @@
   display: grid;
   place-items: center;
   text-decoration: none;
+}
+
+.existing-room__footer {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.existing-room__return {
+  display: grid;
+  min-height: 44px;
+  place-items: center;
+  color: inherit;
+  font: 500 14px / 20px 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  text-decoration: none;
+}
+
+.existing-room__return:hover {
+  text-decoration: underline;
 }
 
 .room-create-page .existing-room__form {

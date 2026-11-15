@@ -9,6 +9,7 @@
 .room-select {
   display: grid;
   flex: 0 0 99px;
+  min-height: 99px;
   grid-template-rows: repeat(2, minmax(0, 1fr));
   width: min(calc(100% - 40px), 182px);
   margin: 0 auto;
@@ -28,45 +29,9 @@
   text-decoration: none;
 }
 
-.room-select--code {
-  width: min(calc(100% - 40px), 295px);
-  grid-template-rows: auto 40px;
-  align-content: center;
-  gap: 8px;
-  text-align: center;
-}
-
-.room-select__code-row {
-  display: flex;
-  align-items: stretch;
-  border: 1px solid #efdfd1;
-  border-radius: 12px;
-  background: #fff;
-}
-
-.room-select__code-row:focus-within {
-  outline: 2px solid #8d5e45;
-}
-
-.room-select__code-row input {
-  flex: 1;
-  min-width: 0;
-  padding: 0 12px;
-  border: 0;
-  background: transparent;
-  color: inherit;
-}
-
-.room-select__code-row button {
-  display: grid;
-  place-items: center;
-  flex: 0 0 44px;
+button.room-select__option {
+  padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
-}
-
-.room-select__code-row button:disabled {
-  opacity: 0.55;
-  cursor: default;
 }

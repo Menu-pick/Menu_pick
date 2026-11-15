@@ -19,9 +19,9 @@ export type LocalRoom = {
   hidden?: boolean
 }
 
-function members(count: number): Participant[] {
+function members(count: number, nickname = '박채희'): Participant[] {
   return Array.from({ length: count }, (_, index) => ({
-    id: `member-${index + 1}`, name: '박채희', image: assets.result.imgEllipse7,
+    id: `member-${index + 1}`, name: index === 0 ? nickname : '박채희', image: assets.result.imgEllipse7,
   }))
 }
 const initialRooms: Record<string, LocalRoom> = {
@@ -39,22 +39,22 @@ export function mealOptions(settings: RoomSettings) {
 
 type RoomState = {
   rooms: Record<string, LocalRoom>
-  createRoom: (settings: RoomSettings) => LocalRoom
+  createRoom: (settings: RoomSettings, nickname: string) => LocalRoom
   saveSettings: (roomId: string, settings: RoomSettings) => void
-  joinByCode: (code: string) => LocalRoom | undefined
+  joinByCode: (code: string, nickname: string) => LocalRoom | undefined
   beginMeal: (roomId: string) => 'ok' | 'missing' | 'waiting' | 'unavailable'
 }
 
 // Local demonstration only. Replace room creation/join and mock members when the room API exists.
 export const useRoomStore = create<RoomState>()(persist((set, get) => ({
   rooms: initialRooms,
-  createRoom: settings => {
+  createRoom: (settings, nickname) => {
     const id = crypto.randomUUID()
     let code: string
     do {
       code = Array.from(crypto.getRandomValues(new Uint8Array(6)), value => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[value % 32]).join('')
     } while (Object.values(get().rooms).some(room => room.code === code))
-    const room: LocalRoom = { id, code, settings, members: members(4), currentParticipantId: 'member-1', demo: true }
+    const room: LocalRoom = { id, code, settings, members: members(4, nickname), currentParticipantId: 'member-1', demo: true }
     set(state => ({ rooms: { ...state.rooms, [id]: room } }))
     useMealStore.getState().configureRoom(id, mealOptions(settings), room.members, room.demo)
     return room
@@ -67,7 +67,20 @@ export const useRoomStore = create<RoomState>()(persist((set, get) => ({
     const meal = useMealStore.getState()
     if (!meal.rooms[roomId]?.started || meal.rooms[roomId]?.completedRecordId) meal.configureRoom(roomId, mealOptions(settings))
   },
-  joinByCode: code => Object.values(get().rooms).find(room => room.code === code.trim().toUpperCase()),
+  joinByCode: (code, nickname) => {
+    const normalizedCode = code.trim().toUpperCase()
+    const room = Object.values(get().rooms).find(room => room.code === normalizedCode)
+    if (!room) return
+
+    const joinedRoom = {
+      ...room,
+      members: room.members.map(member => member.id === room.currentParticipantId
+        ? { ...member, name: nickname }
+        : member),
+    }
+    set(state => ({ rooms: { ...state.rooms, [room.id]: joinedRoom } }))
+    return joinedRoom
+  },
   beginMeal: roomId => {
     const room = get().rooms[roomId]
     if (!room) return 'missing'
