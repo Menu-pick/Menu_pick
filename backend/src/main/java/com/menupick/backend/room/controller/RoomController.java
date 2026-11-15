@@ -47,6 +47,19 @@ public class RoomController {
                 .body(roomService.join(request));
     }
 
+    @Operation(
+            summary = "방 설정 변경",
+            description = "방 이름·식사 장소·식사 방식·음식 카테고리와 내 닉네임을 수정합니다. "
+                    + "변경한 카테고리는 다음 추첨부터 적용되며, 진행 중인 메뉴 후보는 유지됩니다."
+    )
+    @PatchMapping("/{roomId}")
+    public RoomJoinResponse updateRoom(
+            @PathVariable Long roomId,
+            @Valid @RequestBody RoomUpdateRequest request
+    ) {
+        return roomService.update(roomId, request);
+    }
+
     @Operation(summary = "방 조회")
     @GetMapping("/{roomId}")
     public RoomResponse getRoom(@PathVariable Long roomId) {

@@ -84,6 +84,27 @@ public class Room {
         this.categories = new LinkedHashSet<>(categories);
     }
 
+    // 방 설정 변경 (참여 코드는 변경 대상이 아님)
+    public void update(
+            String name,
+            String placeId,
+            String placeName,
+            String address,
+            Double latitude,
+            Double longitude,
+            MealType mealType,
+            Collection<MenuCategory> categories
+    ) {
+        this.name = name;
+        this.placeId = placeId;
+        this.placeName = placeName;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.mealType = mealType;
+        this.categories = new LinkedHashSet<>(categories);
+    }
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

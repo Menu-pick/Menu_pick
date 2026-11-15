@@ -49,6 +49,10 @@ public class Participant {
         this.token = UUID.randomUUID().toString();
     }
 
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     @PrePersist
     protected void onCreate() {
         if (joinedAt == null) {
