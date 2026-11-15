@@ -36,6 +36,19 @@ public class MealSessionController {
     }
 
     @Operation(
+            summary = "메뉴 후보 다시 뽑기",
+            description = "후보가 마음에 들지 않거나 최다 득표가 동점일 때 후보 3개를 다시 추첨합니다. "
+                    + "기존 투표는 모두 초기화되며, 직전 후보는 제외하고 뽑습니다."
+    )
+    @PostMapping("/{mealSessionId}/redraw")
+    public MealSessionResponse redrawCandidates(
+            @PathVariable Long roomId,
+            @PathVariable Long mealSessionId
+    ) {
+        return mealSessionService.redraw(roomId, mealSessionId);
+    }
+
+    @Operation(
             summary = "현재 식사 세션 조회",
             description = "늦게 입장하거나 새로고침한 참여자도 동일한 메뉴 후보를 보기 위해 사용합니다."
     )
