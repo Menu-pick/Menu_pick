@@ -15,6 +15,11 @@ public record RoomCreateRequest(
         @Schema(description = "방 이름 (최대 15자)", example = "덕성 멋사 뭐 먹지?")
         String name,
 
+        @NotBlank(message = "닉네임을 입력해주세요.")
+        @Size(max = 10, message = "닉네임은 10자 이내로 입력해주세요.")
+        @Schema(description = "방을 만드는 사람의 닉네임 (최대 10자)", example = "서연")
+        String nickname,
+
         @NotNull(message = "식사 방식을 선택해주세요.")
         @Schema(description = "식사 방식", example = "DINE_IN")
         MealType mealType,
