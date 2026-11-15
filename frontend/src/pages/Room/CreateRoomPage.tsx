@@ -7,9 +7,11 @@ const categories = ['한식', '중식', '일식', '카페,디저트', '패스트
 const mealModes = ['매장', '배달'] as const
 
 let savedDraft: RoomSettings = { name: '', location: '', mealMode: '매장', categories: [] }
+let savedNickname = ''
 
 export default function CreateRoomPage() {
   const [settings, setSettings] = useState(savedDraft)
+  const [nickname, setNickname] = useState(savedNickname)
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
@@ -17,13 +19,19 @@ export default function CreateRoomPage() {
     event.preventDefault()
     const name = settings.name.trim()
     const location = settings.location.trim()
+    const memberName = nickname.trim()
     if (!name || name.length > 10 || !location) {
       setError('방 이름과 식사 장소를 확인해 주세요.')
       return
     }
+    if (!memberName) {
+      setError('내 닉네임을 입력해 주세요.')
+      return
+    }
 
     savedDraft = { ...settings, name, location }
-    const room = useRoomStore.getState().createRoom(savedDraft)
+    savedNickname = memberName
+    const room = useRoomStore.getState().createRoom(savedDraft, savedNickname)
     void navigate(`/room/${encodeURIComponent(room.id)}/waiting`, { state: { fromCreate: true } })
   }
 
@@ -38,6 +46,11 @@ export default function CreateRoomPage() {
           방 이름
           <input name="name" placeholder="10자입력해주세요." maxLength={10} required
             value={settings.name} onChange={(event) => setSettings({ ...settings, name: event.target.value })} />
+        </label>
+        <label>
+          내 닉네임
+          <input name="nickname" placeholder="참여할 닉네임을 입력해주세요." autoComplete="nickname" required
+            value={nickname} onChange={(event) => setNickname(event.target.value)} />
         </label>
         <label>
           식사 장소

@@ -8,14 +8,34 @@ import { useRoomStore } from '../../features/room/roomStore'
 import '../../pages/Home/HomePage.css'
 
 type HomeScreenProps = {
-  slogan: ReactNode
-  createLink: string
+  slogan?: ReactNode
+  createLink?: string
+  onCreate?: () => void
+  createExpanded?: boolean
+  showCreateRays?: boolean
   children?: ReactNode
   className?: string
 }
 
-export default function HomeScreen({ slogan, createLink, children, className }: HomeScreenProps) {
+export default function HomeScreen({
+  slogan = '후보는 가볍게, 결정은 함께',
+  createLink = '/room/create',
+  onCreate,
+  createExpanded,
+  showCreateRays = true,
+  children,
+  className,
+}: HomeScreenProps) {
   const rooms = useRoomStore(state => state.rooms)
+  const createContent = (
+    <>
+      <span className="home-page__create-icon" aria-hidden="true">
+        {showCreateRays && <span className="home-page__rays" />}
+        <span className="home-page__plus" />
+      </span>
+      새로운 방 만들기
+    </>
+  )
   return (
     <div className={className ? `home-page ${className}` : 'home-page'}>
       <div className="home-page__hill" aria-hidden="true" />
@@ -39,13 +59,12 @@ export default function HomeScreen({ slogan, createLink, children, className }: 
       {children}
 
       <div className="home-page__actions">
-        <Link className="home-page__create" to={createLink}>
-          <span className="home-page__create-icon" aria-hidden="true">
-            <span className="home-page__rays" />
-            <span className="home-page__plus" />
-          </span>
-          새로운 방 만들기
-        </Link>
+        {onCreate ? (
+          <button className="home-page__create" type="button" onClick={onCreate}
+            aria-expanded={createExpanded} aria-controls="home-room-options">{createContent}</button>
+        ) : (
+          <Link className="home-page__create" to={createLink}>{createContent}</Link>
+        )}
       </div>
     </div>
   )

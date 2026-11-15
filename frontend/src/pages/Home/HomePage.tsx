@@ -1,9 +1,20 @@
+import { useState } from 'react'
 import HomeScreen from '../../components/home/HomeScreen'
-import { Navigate } from 'react-router'
-import { useRoomStore } from '../../features/room/roomStore'
+import { RoomJoinForm } from '../Room/RoomCodePage'
+import { RoomSelectionOptions } from '../Room/RoomSelectPage'
+
+type HomeStep = 'default' | 'create-select' | 'join-code'
 
 export default function HomePage() {
-  const rooms = useRoomStore(state => state.rooms)
-  if (!Object.values(rooms).some(room => !room.hidden)) return <Navigate to="/error/e01" replace />
-  return <HomeScreen slogan="후보는 가볍게, 결정은 함께" createLink="/room/select" />
+  const [step, setStep] = useState<HomeStep>('default')
+
+  return (
+    <HomeScreen showCreateRays={step === 'default'} createExpanded={step !== 'default'}
+      onCreate={() => setStep(current => current === 'create-select' ? 'default' : 'create-select')}>
+      <div id="home-room-options" className="home-page__room-options">
+        {step === 'create-select' && <RoomSelectionOptions onJoin={() => setStep('join-code')} />}
+        {step === 'join-code' && <RoomJoinForm />}
+      </div>
+    </HomeScreen>
+  )
 }

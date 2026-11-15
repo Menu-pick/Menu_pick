@@ -39,6 +39,14 @@ button, input {
   background: #fdf8f0;
 }
 
+.mobile-layout:has(> :is(.home-page:not(.room-selection-page), .room-create-page:not(.existing-room))) {
+  scrollbar-width: none;
+}
+
+.mobile-layout:has(> :is(.home-page:not(.room-selection-page), .room-create-page:not(.existing-room)))::-webkit-scrollbar {
+  display: none;
+}
+
 .bottom-sheet {
   position: fixed;
   inset: auto 0 0;
