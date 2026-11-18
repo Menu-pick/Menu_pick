@@ -4,7 +4,6 @@ import com.menupick.backend.meal.entity.MealSession;
 import com.menupick.backend.meal.entity.MealStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,9 +24,6 @@ public record MealSessionResponse(
         @Schema(description = "확정된 메뉴 (확정 전에는 null)")
         MenuCandidateResponse confirmedMenu,
 
-        @Schema(description = "메뉴 확정 날짜 (확정 전에는 null)")
-        LocalDate confirmedDate,
-
         @Schema(description = "세션 시작 일시")
         LocalDateTime createdAt
 ) {
@@ -42,7 +38,6 @@ public record MealSessionResponse(
                 session.getConfirmedMenu() == null
                         ? null
                         : MenuCandidateResponse.from(session.getConfirmedMenu()),
-                session.getConfirmedDate(),
                 session.getCreatedAt()
         );
     }
