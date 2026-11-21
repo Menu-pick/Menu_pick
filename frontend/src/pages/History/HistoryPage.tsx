@@ -5,6 +5,7 @@ import Calendar from '../../features/meal/Calendar'
 import { useMealRoom } from '../../features/meal/MealUI'
 import { localDate, parseLocalDate, useMealStore } from '../../features/meal/mealStore'
 import { useRestaurantHistory } from '../../features/meal/useRestaurantHistory'
+import { isApiRoom } from '../../features/meal/mealApi'
 import RoomDetailPage from '../Room/RoomDetailPage'
 
 // Figma: 13, 14
@@ -42,8 +43,9 @@ export default function HistoryPage() {
   useEffect(() => {
     if (remote.error) navigate('/error/e06', { replace: true, state: { returnTo: `/room/${roomId}/history?view=day&date=${selected}` } })
   }, [remote.error, navigate, roomId, selected])
-  const recordedDates = [...new Set([...remote.dates, ...records.filter(record => record.roomId === roomId).map(record => record.date)])]
-  const dayRecords = records.filter(record => record.roomId === roomId && record.date === selected)
+  const localRecords = records.filter(record => record.roomId === roomId && (!isApiRoom(roomId) || record.mode === 'delivery'))
+  const recordedDates = [...new Set([...remote.dates, ...localRecords.map(record => record.date)])]
+  const dayRecords = localRecords.filter(record => record.date === selected)
   const chooseDate = (date: string) => {
     setParams({ view: 'day', date })
   }
@@ -53,8 +55,11 @@ export default function HistoryPage() {
     <section ref={sheetRef} className={`history-sheet ${detail ? 'is-detail' : ''}`} aria-label="이전 식사 기록" tabIndex={-1}><Button className="history-handle" aria-label="달력 닫기" onClick={closeCalendar} />
       <Calendar month={month} selected={selected} recordedDates={recordedDates} onMonthChange={setMonth} onSelect={chooseDate} />
       {detail && <div className="history-records"><h2>{dateLabel}</h2>{dayRecords.map(record => <article className="meal-card history-record" key={record.id}><h3>{record.menu}</h3><p>{record.restaurant}</p></article>)}
-        {remote.records.map(record => <article className="meal-card history-record" key={`remote-${record.id}`}><h3>{record.name}</h3><p>{record.address}</p></article>)}
-        {dayRecords.length === 0 && remote.records.length === 0 && <p className="history-empty">이 날짜에는 아직 식사 기록이 없어요.</p>}</div>}
+        {remote.records.map(record => {
+          const cached = records.find(item => item.roomId === roomId && item.id === `restaurant-${record.id}`)
+          return <article className="meal-card history-record" key={`remote-${record.id}`}><h3>{cached?.menu ?? record.name}</h3><p>{cached ? record.name : record.address}</p></article>
+        })}
+        {remote.loading ? <p className="history-empty" role="status">기록을 불러오고 있어요.</p> : dayRecords.length === 0 && remote.records.length === 0 && <p className="history-empty">이 날짜에는 아직 식사 기록이 없어요.</p>}</div>}
     </section>
   </div>} />
 }

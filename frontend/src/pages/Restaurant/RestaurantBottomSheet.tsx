@@ -1,5 +1,7 @@
 import BottomSheet, { type BottomSheetProps } from '../../features/meal/MealBottomSheet'
-import { MealButton, useMealRoom } from '../../features/meal/MealUI'
+import { MealButton, Notice, useMealRoom } from '../../features/meal/MealUI'
+import { confirmApiMeal } from '../../features/meal/mealApi'
+import { useMealApiAction } from '../../features/meal/useMealApiAction'
 import { restaurantRecommendations, useMealStore, useRoomMeal } from '../../features/meal/mealStore'
 import { useNavigate } from 'react-router'
 import { useEffect } from 'react'
@@ -11,6 +13,7 @@ export default function RestaurantBottomSheet({ menuName = '쌀국수', ...props
   const roomId = useMealRoom()
   const navigate = useNavigate()
   const room = useRoomMeal(roomId)
+  const { run, pending, message } = useMealApiAction()
   const { restaurantId } = room
   const catalog = useMealStore(state => state.restaurantCatalog)
   const { items: restaurants, preview } = restaurantRecommendations(room, catalog)
@@ -32,10 +35,19 @@ export default function RestaurantBottomSheet({ menuName = '쌀국수', ...props
           onClick={() => select(roomId, restaurant.id)}>{restaurantId === restaurant.id ? '✓' : ''}</button>
       </div>)}
     </div>
-    <MealButton disabled={!selected} onClick={() => {
+    <MealButton disabled={!selected || pending} onClick={() => {
+      if (room.remote) {
+        void run(async () => {
+          const record = await confirmApiMeal(roomId, false)
+          props.onClose()
+          navigate(`/room/${roomId}/complete?record=${record.id}`)
+        })
+        return
+      }
       const record = complete(roomId, 'restaurant')
       props.onClose()
       navigate(`/room/${roomId}/complete${record ? `?record=${record.id}` : ''}`)
     }}>이 식당으로 확정하기</MealButton>
+    <Notice>{message}</Notice>
   </BottomSheet>
 }

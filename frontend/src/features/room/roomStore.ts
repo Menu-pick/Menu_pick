@@ -85,6 +85,8 @@ export const useRoomStore = create<RoomState>()(persist((set, get) => ({
     const room = get().rooms[roomId]
     if (!room) return 'missing'
     if (room.members.length < 2) return 'waiting'
+    // Numeric IDs belong to the backend; RoulettePage's API boundary draws the session.
+    if (/^[1-9]\d*$/.test(roomId)) return 'ok'
     const meal = useMealStore.getState()
     meal.configureRoom(roomId, mealOptions(room.settings), room.members, room.demo)
     meal.setCurrentParticipant(roomId, room.currentParticipantId)

@@ -1,13 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { assets } from './assets'
+import { previewMenus } from './previewMenus'
 
 export type MealMode = 'restaurant' | 'delivery'
 export type Choice = 'like' | 'dislike'
 export type Menu = { id: string; name: string; image: string; categories: string[] }
 export type Participant = { id: string; name: string; image: string }
-export type RoomOptions = { name: string; categories: string[]; mode: MealMode; location: string }
-export type Restaurant = { id: string; name: string; monogram: string; distance: string; meters: number; menuIds: string[]; location: string; mapUrl: string }
+export type RoomOptions = { name: string; categories: string[]; mode: MealMode; location: string; latitude?: number; longitude?: number }
+export type Restaurant = { id: string; name: string; monogram: string; distance: string; meters: number; menuIds: string[]; location: string; mapUrl: string; address?: string; latitude?: number; longitude?: number; distanceType?: 'WALKING' | 'STRAIGHT'; walkingMinutes?: number | null }
 export type MealRecord = {
   id: string; sessionId: string; roomId: string; date: string; menuId: string;
   menu: string; restaurantId?: string; restaurant: string; mode: MealMode;
@@ -17,6 +18,11 @@ export type RoomMeal = {
   participants: Participant[]; currentParticipantId: string;
   ballots: Record<string, Record<string, Choice>>; restaurantId: string;
   completedRecordId?: string;
+  remote?: boolean;
+  status?: 'VOTING' | 'CONFIRMED';
+  confirmedMenu?: Menu;
+  result?: { allVoted: boolean; tie: boolean; totalCount: number; counts: Record<string, number> };
+  recommendations?: Restaurant[];
 }
 
 // Local fixtures; room integration can supply its own catalog and participants.
@@ -58,9 +64,11 @@ export function hasVoted(room: RoomMeal, participantId = room.currentParticipant
   return room.candidates.length > 0 && room.candidates.every(menu => ['like', 'dislike'].includes(room.ballots[participantId]?.[menu.id]))
 }
 export function allVotesComplete(room: RoomMeal) {
+  if (room.remote) return room.result?.allVoted ?? false
   return room.participants.length > 0 && room.participants.every(member => hasVoted(room, member.id))
 }
 export function rankedMenus(room: RoomMeal) {
+  if (room.remote) return room.candidates.map(menu => ({ ...menu, count: room.result?.counts[menu.id] ?? 0 })).sort((a, b) => b.count - a.count)
   return room.candidates.map(menu => ({ ...menu, count: room.participants.filter(member => room.ballots[member.id]?.[menu.id] === 'like').length }))
     .sort((a, b) => b.count - a.count)
 }
@@ -68,7 +76,13 @@ export function uniqueWinner(room: RoomMeal) {
   const ranking = rankedMenus(room)
   return ranking[0] && (!ranking[1] || ranking[0].count > ranking[1].count) ? ranking[0] : undefined
 }
+export function hasTiedWinners(room: RoomMeal) {
+  if (room.remote) return room.result?.tie ?? false
+  const ranking = rankedMenus(room)
+  return ranking.length > 1 && ranking[0].count === ranking[1].count
+}
 export function restaurantRecommendations(room: RoomMeal, catalog: Restaurant[] = restaurants) {
+  if (room.remote) return { items: room.recommendations ?? [], preview: false }
   const winner = uniqueWinner(room)
   const matches = winner ? catalog.filter(item => item.menuIds.includes(winner.id) && item.location === room.options.location).sort((a, b) => a.meters - b.meters) : []
   if (matches.length > 0) return { items: matches, preview: false }
@@ -79,8 +93,10 @@ export function restaurantRecommendations(room: RoomMeal, catalog: Restaurant[] 
 export function recommendedRestaurants(room: RoomMeal, catalog: Restaurant[] = restaurants) {
   return restaurantRecommendations(room, catalog).items
 }
-function pickCandidates(catalog: Menu[], categories: string[]) {
-  const pool = [...new Map(catalog.filter(menu => categories.length === 0 || categories.includes('전체') || menu.categories.some(category => categories.includes(category))).map(menu => [menu.id, menu])).values()]
+function pickCandidates(catalog: Menu[], categories: string[], excluded: string[] = []) {
+  const eligible = [...new Map(catalog.filter(menu => categories.length === 0 || categories.includes('전체') || menu.categories.some(category => categories.includes(category))).map(menu => [menu.id, menu])).values()]
+  const fresh = eligible.filter(menu => !excluded.includes(menu.id))
+  const pool = fresh.length >= 3 ? fresh : eligible
   for (let index = pool.length - 1; index > 0; index--) {
     const other = Math.floor(Math.random() * (index + 1))
     ;[pool[index], pool[other]] = [pool[other], pool[index]]
@@ -112,8 +128,8 @@ export const useMealStore = create<MealState>()(persist((set, get) => ({
     const state = get()
     const room = state.rooms[roomId] ?? emptyRoom
     if (!forceNew && room.started && !room.completedRecordId) return room.candidates.length === 3
-    let candidates = pickCandidates(state.menuCatalog, room.options.categories)
-    if (room.demo && candidates.length === 0) candidates = pickCandidates(menus, [])
+    let candidates = pickCandidates(room.demo ? previewMenus : state.menuCatalog, room.options.categories, room.candidates.map(menu => menu.id))
+    if (room.demo && candidates.length === 0) candidates = pickCandidates(previewMenus, [], room.candidates.map(menu => menu.id))
     if (candidates.length !== 3) return false
     const next: RoomMeal = { ...room, sessionId: crypto.randomUUID(), started: true, candidates,
       ballots: {}, restaurantId: '', completedRecordId: undefined,

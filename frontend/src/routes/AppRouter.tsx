@@ -15,6 +15,7 @@ import SelectionCompletePage from '../pages/Complete/SelectionCompletePage'
 import HistoryPage from '../pages/History/HistoryPage'
 import ErrorPage from '../pages/Error/ErrorPage'
 import RoomBoundary from '../features/room/RoomBoundary'
+import MealApiBoundary from '../features/meal/MealApiBoundary'
 
 export default function AppRouter() {
   return (
@@ -30,10 +31,13 @@ export default function AppRouter() {
           <Route index element={<RoomDetailPage />} />
           <Route path="waiting" element={<WaitingRoomPage />} />
           <Route path="settings" element={<RoomSettingsPage />} />
-          <Route path="roulette" element={<RoulettePage />} />
-          <Route path="vote" element={<VotingPage />} />
-          <Route path="result" element={<VoteResultPage />} />
-          <Route path="complete" element={<SelectionCompletePage />} />
+          <Route element={<MealApiBoundary />}>
+            <Route path="roulette" element={<RoulettePage />} />
+            <Route path="vote" element={<VotingPage />} />
+            <Route path="result" element={<VoteResultPage />} />
+            <Route path="result/tie" element={<VoteResultPage tieResult />} />
+            <Route path="complete" element={<SelectionCompletePage />} />
+          </Route>
           <Route path="history" element={<HistoryPage />} />
         </Route>
         <Route path="/error/:code" element={<ErrorPage />} />
