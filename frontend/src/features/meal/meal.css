@@ -103,6 +103,12 @@
 .result-scroll-content{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:24px;background-image:inherit;background-size:inherit;background-repeat:inherit;background-attachment:local}
 .result-scroll-content>*{flex-shrink:0}
 .result-page .result-collapsed-sheet{flex-shrink:0;margin-top:0;z-index:1}
+.tie-result .winner-card+.winner-card{margin-top:24px}
+.tie-result .result-others{margin-top:25px}
+.tie-result .tie-footer{flex-shrink:0;padding:0 27px max(14px,env(safe-area-inset-bottom))}
+.tie-result .tie-footer p{text-align:center;color:var(--meal-muted);font-size:12px;line-height:18px;font-weight:700;margin-bottom:20px}
+.tie-footer .meal-button{gap:10px}
+.tie-footer .meal-button img{display:block;width:16px;height:16px}
 .complete-card{margin:calc(132 * var(--design-space)) 27px 0;border-radius:22px;box-shadow:0 4px 12px #4b2f241f;text-align:center;position:relative;padding:calc(35 * var(--design-space)) 0}
 .complete-illustration{width:clamp(100px,calc(var(--app-height, 100dvh) - 326 * var(--design-space) - 240px),255px);height:clamp(100px,calc(var(--app-height, 100dvh) - 326 * var(--design-space) - 240px),255px);display:block;margin:0 auto;object-fit:cover}
 .complete-card h1{font-size:24px;line-height:32px;letter-spacing:-.2px}

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import Button from '../../components/common/Button'
 import { MealButton, MealHeader, MealScreen, useMealRoom } from '../../features/meal/MealUI'
-import { allVotesComplete, currentVotes, useMealStore, useRoomMeal } from '../../features/meal/mealStore'
+import { allVotesComplete, currentVotes, hasTiedWinners, useMealStore, useRoomMeal } from '../../features/meal/mealStore'
 
 // Figma: 07
 export default function VotingPage() {
@@ -27,7 +27,7 @@ export default function VotingPage() {
     </article>)}</div>
     <div className="meal-footer"><MealButton onClick={() => {
       if (!finished) { navigate('/error/e04', { state: { returnTo: `/room/${roomId}/vote${modeSuffix}` } }); return }
-      navigate(`/room/${roomId}/result${modeSuffix}`)
+      navigate(`/room/${roomId}/result${hasTiedWinners(room) ? '/tie' : ''}${modeSuffix}`)
     }}>결과 확인하기</MealButton></div>
   </MealScreen>
 }

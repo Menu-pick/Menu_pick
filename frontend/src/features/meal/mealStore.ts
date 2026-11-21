@@ -68,6 +68,10 @@ export function uniqueWinner(room: RoomMeal) {
   const ranking = rankedMenus(room)
   return ranking[0] && (!ranking[1] || ranking[0].count > ranking[1].count) ? ranking[0] : undefined
 }
+export function hasTiedWinners(room: RoomMeal) {
+  const ranking = rankedMenus(room)
+  return ranking.length > 1 && ranking[0].count === ranking[1].count
+}
 export function restaurantRecommendations(room: RoomMeal, catalog: Restaurant[] = restaurants) {
   const winner = uniqueWinner(room)
   const matches = winner ? catalog.filter(item => item.menuIds.includes(winner.id) && item.location === room.options.location).sort((a, b) => a.meters - b.meters) : []

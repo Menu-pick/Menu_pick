@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Divider, MealButton, MealHeader, MealScreen, useMealRoom } from '../../features/meal/MealUI'
 import { assets } from '../../features/meal/assets'
 import { useMealStore, useRoomMeal } from '../../features/meal/mealStore'
@@ -19,6 +19,7 @@ export default function RoulettePage() {
   const [failed, setFailed] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   const roomId = useMealRoom()
   const room = useRoomMeal(roomId)
   const startMeal = useMealStore(state => state.startMeal)
@@ -51,6 +52,6 @@ export default function RoulettePage() {
       <Divider />
       <p role="status">{failed ? '선택한 카테고리의 메뉴 후보가 부족해요.' : ready ? '메뉴 후보가 준비됐어요. 함께 투표해볼까요?' : '음식 카테고리를 바탕으로 메뉴 후보를 뽑고 있어요.'}</p>
     </div>
-    <div className="meal-footer"><MealButton disabled={!ready} onClick={() => navigate(`/room/${roomId}/vote${room.options.mode === 'delivery' ? '?mode=delivery' : ''}`)}>투표하러 가기</MealButton></div>
+    <div className="meal-footer"><MealButton disabled={!ready} onClick={() => navigate(`/room/${roomId}/vote${(params.get('mode') ?? room.options.mode) === 'delivery' ? '?mode=delivery' : ''}`)}>투표하러 가기</MealButton></div>
   </MealScreen>
 }

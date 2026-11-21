@@ -33,6 +33,7 @@ export default function AppRouter() {
           <Route path="roulette" element={<RoulettePage />} />
           <Route path="vote" element={<VotingPage />} />
           <Route path="result" element={<VoteResultPage />} />
+          <Route path="result/tie" element={<VoteResultPage tieResult />} />
           <Route path="complete" element={<SelectionCompletePage />} />
           <Route path="history" element={<HistoryPage />} />
         </Route>
