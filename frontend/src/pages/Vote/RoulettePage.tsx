@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Divider, MealButton, MealHeader, MealScreen, useMealRoom } from '../../features/meal/MealUI'
 import { assets } from '../../features/meal/assets'
@@ -13,7 +13,7 @@ const slotSymbols = [
   { name: '국', x: 720, y: 672 },
 ]
 
-// Figma: 06 — fixture candidates, ready for the recommendation API.
+// Figma: 06 — server candidates for API rooms, fixtures only for local previews.
 export default function RoulettePage() {
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -23,8 +23,10 @@ export default function RoulettePage() {
   const roomId = useMealRoom()
   const room = useRoomMeal(roomId)
   const startMeal = useMealStore(state => state.startMeal)
+  const drawnRoom = useRef<string | null>(null)
   useEffect(() => {
-    const generated = startMeal(roomId)
+    const generated = room.remote ? room.candidates.length === 3 : startMeal(roomId, drawnRoom.current !== roomId)
+    drawnRoom.current = roomId
     setFailed(!generated)
     setReady(false)
     if (!generated) {
@@ -34,7 +36,7 @@ export default function RoulettePage() {
     if (!generated || !imageLoaded) return
     const timer = window.setTimeout(() => setReady(true), 1500)
     return () => window.clearTimeout(timer)
-  }, [roomId, startMeal, imageLoaded, navigate])
+  }, [roomId, startMeal, imageLoaded, navigate, room.remote, room.candidates.length])
   return <MealScreen className="slot-page">
     <MealHeader title="슬롯 추첨" />
     <div className={`meal-card slot-card ${ready ? 'is-ready' : !failed && imageLoaded ? 'is-spinning' : ''}`}>

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import apiClient from '../../api/apiClient'
 import { parseLocalDate } from './mealStore'
+import { isApiRoom } from './mealApi'
 
 export type RestaurantHistoryItem = { id: number; name: string; address: string; confirmedDate?: string }
 
-// Preserve the history API brought in from develop, while local-only demos make no requests.
+// Numeric room IDs read server history; local-only previews make no requests.
 export function useRestaurantHistory(roomId: string, month: Date, selected: string) {
-  const enabled = Boolean(import.meta.env.VITE_API_BASE_URL) && /^\d+$/.test(roomId)
+  const enabled = isApiRoom(roomId)
   const year = month.getFullYear()
   const monthNumber = month.getMonth() + 1
   const path = `/api/rooms/${encodeURIComponent(roomId)}/restaurants`
@@ -38,5 +39,5 @@ export function useRestaurantHistory(roomId: string, month: Date, selected: stri
       .catch(() => { if (!controller.signal.aborted) setError(true) })
     return () => controller.abort()
   }, [enabled, recorded, path, selected, recordKey])
-  return { dates, records: enabled && recorded && recordState.key === recordKey ? recordState.records : [], error: enabled && error }
+  return { dates, records: enabled && recorded && recordState.key === recordKey ? recordState.records : [], loading: enabled && (dateState.key !== monthKey || (recorded && recordState.key !== recordKey)), error: enabled && error }
 }

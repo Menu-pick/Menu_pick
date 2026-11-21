@@ -1,58 +1,73 @@
-# 프론트 통합 흐름
+# 식사 선택 화면 API 연동
 
-`feat/meal-selection-ui`의 메뉴 선택 화면과 `develop`의 홈·방·예외 화면을 연결합니다. 화면의 구성과 에셋은 유지하고 상태와 이동을 연결했습니다.
-
-## 실행 및 확인
+## 실행
 
 ```bash
 cd frontend
+cp .env.example .env.local
 npm ci
 npm run dev
 ```
 
-1. `/home` → 새로운 방 만들기 → 방 이름·위치·매장/배달 저장
-2. 대기실 → 메뉴 후보 뽑기 → 1.5초 슬롯 회전 → 투표
-3. 매장: 결과 → 추천 식당 → 식당 확정 → 완료
-4. 배달: 결과 → 배달앱 안내 → 메뉴 확정 → 완료
-5. 완료 → 방으로 돌아가기 → 달력에서 기록 조회
-6. 기존 방 → 설정 저장 또는 새로운 식사 선택 → 다음 세션 시작
+`VITE_API_BASE_URL`에 백엔드 서버 주소를 지정합니다. 미설정 시 `http://localhost:8080`을 사용합니다. 백엔드 실행에 필요한 DB와 Kakao 키는 백엔드 담당 설정을 사용합니다.
 
-## 공통 상태
+## 방 화면 담당자 연결 지점
 
-- `features/room/roomStore.ts`: 방 ID·코드·이름·위치·카테고리·방식·멤버를 localStorage(`bappick-rooms`)에 저장합니다.
-- `mealStore.ts`: 후보·참여자별 선택·확정 기록을 localStorage(`bappick-meal-demo`, version 2)에 저장합니다.
-- `RoomBoundary`: 방별 페이지에서 같은 방 정보를 사용하고, 존재하지 않는 방에 대한 진입을 처리합니다.
-- 홈 목록과 대기실은 같은 방 저장소를 읽습니다. 새 방은 고유 ID·초대 코드를 받고, 코드는 대소문자를 구분하지 않습니다.
-- 방 설정은 새로고침 후에도 유지됩니다. 진행 중인 식사와 완료 기록은 유지하고, 변경 옵션은 다음 식사에 적용합니다.
-- `beginMeal(roomId)`가 멤버·방 옵션을 식사 세션으로 전달합니다. `startMeal(roomId)`는 진행 중인 후보·투표를 유지하며, 명시적으로 새 식사를 시작하면 과거 기록을 보존한 채 새 세션을 만듭니다.
-- `setCurrentParticipant`·`setCatalog`는 추후 로그인/메뉴 데이터 연결용입니다.
+방 생성/참여 API 응답을 받은 직후 아래 함수를 호출하고 **서버에서 발급한 숫자 roomId**로 이동합니다. 토큰을 URL이나 라우터 state에 넣지 않습니다.
 
-## 예외 화면 연결
+```tsx
+import apiClient from '../../api/apiClient'
+import { registerMealAccess, type ApiJoinResponse } from '../../features/meal/mealApi'
 
-- 참여 방 없음: E01 / 잘못된 초대 코드: E02
-- 멤버 대기: E03 / 전체 투표 미완료: E04
-- 추천 식당 없음: E05 / 기록 API 오류: E06
-- 현재 제공하지 않는 카테고리 후보 등 미구현 데이터: E07
-- 예외 화면은 `develop`의 `ErrorPage`를 사용합니다. 호출 화면의 `returnTo`로 돌아가며, 잘못된 코드는 입력값을 유지합니다.
-- 동률은 임의로 최종 확정하지 않습니다. 결선 투표와 대표 메뉴·가격 UI는 디자인 합의 전까지 보류합니다.
+// 방 생성/참여 화면에서 이미 받은 응답을 전달합니다.
+const { data } = await apiClient.post<ApiJoinResponse>('/api/rooms/join', {
+  code: invitationCode,
+  nickname,
+})
+registerMealAccess(data)
+navigate(`/room/${data.room.roomId}/waiting`)
+// 대기실의 시작 버튼 → /room/${data.room.roomId}/roulette
+```
 
-## 기록 API 보존
+- `registerMealAccess`는 응답의 `me.participantId`, `me.participantToken`, `me.nickname`을 방별로 보관합니다.
+- 방 생성·참여·설정 폼의 기존 UI와 API 전환은 다른 담당자 영역이라 변경하지 않았습니다. 현재 로컬 생성 폼이 만든 UUID 방은 계속 데모입니다.
+- 숫자 방 경로는 `RoomBoundary`에서 실제 방과 참여자 목록을 조회합니다. 같은 ID의 과거 로컬 예시 데이터는 서버 데이터로 교체합니다.
+- 숫자 방의 `beginMeal`은 로컬 후보를 만들지 않습니다. 슬롯 화면 진입 시 서버가 후보를 생성합니다.
+- `/room/demo/...`는 백엔드 없이 디자인을 확인하는 기존 데모입니다.
+- 데모 슬롯은 `previewMenus.ts`에 반영한 백엔드 기본 메뉴 36종과 같은 로컬 사진을 사용합니다. 슬롯 재진입·새로고침 시 3개를 다시 뽑고, 가능한 경우 직전 후보는 제외합니다. 실제 숫자 방은 이 목록을 사용하지 않고 서버 후보를 유지합니다.
 
-`develop`에서 가져온 기록 API 조회는 `useRestaurantHistory.ts`로 분리해 기존 달력 UI 안에서 사용합니다.
+## API 흐름
 
-- `VITE_API_BASE_URL`이 설정되어 있고 방 ID가 숫자일 때만 서버 조회를 합니다.
-- `GET /api/rooms/:roomId/restaurants/dates?year=...&month=...`
-- `GET /api/rooms/:roomId/restaurants?date=YYYY-MM-DD`
-- 기본 실행에서는 백엔드 요청 없이 로컬 기록을 사용합니다.
-- 월·날짜 변경 시 이전 요청을 취소해 오래된 응답이 현재 기록을 덮어쓰지 않게 합니다.
-- 로컬과 서버의 확정 기록을 같은 달력에서 조회합니다. 생성·참여·투표 API는 아직 연결하지 않았습니다.
+| 화면 | 요청 |
+| --- | --- |
+| 06 슬롯 | `POST /api/rooms/:roomId/meals` |
+| 새로고침/현재 후보 | `GET /api/rooms/:roomId/meals/current` |
+| 동점 재추첨 | `POST /api/rooms/:roomId/meals/:sessionId/redraw` |
+| 07 내 투표 복원 | `GET .../:sessionId/votes/me?participantToken=...` |
+| 07 선택/선택 변경 | `POST .../:sessionId/votes` (`participantToken`, 숫자 `menuId`, `LIKE`/`DISLIKE`) |
+| 08 집계/동점 | `GET .../:sessionId/votes/result` |
+| 09 식당 추천 | `GET /api/recommendations/restaurants?menu=...&latitude=...&longitude=...` |
+| 09/09-D 메뉴 확정 | `POST .../:sessionId/confirm` (`participantToken`) |
+| 09 식당 확정·기록 | `POST /api/rooms/:roomId/restaurants` |
+| 13 기록 날짜 | `GET /api/rooms/:roomId/restaurants/dates?year=...&month=...` |
+| 14 날짜별 기록 | `GET /api/rooms/:roomId/restaurants?date=YYYY-MM-DD` |
 
-## 로컬 데모 범위
+- 후보는 서버 응답만 사용합니다. `menuId/name/category/imageUrl`을 화면 데이터로 변환하고, 백엔드가 추가한 `public/images/menus/*.jpg` 36장을 `imageUrl` 경로 그대로 표시합니다. 별도 메뉴 목록 API가 없어 프론트가 임의 후보를 서버에 전달하지 않습니다.
+- 슬롯은 이미지를 불러온 뒤 1.5초 동안 회전합니다.
+- 실제 방에서는 서버의 `allVoted`, `likeCount`, `totalCount`, `tie`로 화면과 이동을 결정합니다. 투표 중에는 3초 간격으로 현재 세션·참여자·집계를 갱신합니다. 변경 요청 중에는 폴링을 중단하고 중복 클릭을 막습니다.
+- 참여자 이름은 `/api/rooms/:roomId/participants`의 `nickname`을 사용합니다. 매장·배달·동점 결과에 공통 적용하며, 5명 이상이면 Figma의 108×4px 스크롤바와 가로 넘기기를 표시합니다. 긴 닉네임은 말줄임하고 전체 이름을 툴팁으로 제공합니다.
+- 재추첨은 서버의 redraw API를 사용하므로 후보 교체와 투표 초기화가 서버에 반영됩니다.
+- 식당 정보는 기준 좌표와 최다 득표 메뉴로 조회합니다. 거리 유형을 구분하고, 실제 도보 시간이 없는 경우 직선거리로 표시합니다. 식당명·주소로 네이버 지도를 엽니다.
+- 매장은 메뉴 확정 후 식당 기록 저장까지 성공해야 완료 화면으로 이동합니다. 배달은 메뉴 확정 성공 후 이동하며 앱 링크와 디자인은 유지합니다.
+- API 실패를 로컬 예시 목록이나 성공 화면으로 대체하지 않습니다. E02(참여 토큰), E04(투표 부족), E05(식당 없음), E06(네트워크/서버 실패)로 연결합니다. 그 밖의 검증 실패는 서버 안내문을 표시합니다.
 
-- 기존 예시 방은 4명/6명입니다. 새 방도 기존 대기실 디자인에 맞춘 예시 멤버 4명을 사용합니다. 다른 멤버의 투표는 데모 데이터이며 실제 접속·실시간 투표를 의미하지 않습니다.
-- 메뉴 예시는 쌀국수·마라탕·칼국수입니다. 선택 카테고리 안에서 서로 다른 후보 3개가 없으면 E07로 안내합니다. 조건 밖 메뉴를 임의로 추천하지 않습니다.
-- 식당 예시는 미분당·포포쌀국수·사이공포 3곳입니다. 백엔드 미연동 또는 데모 방에서는 투표 전에도 추천 화면을 열 수 있고, 메뉴·위치와 일치하는 데이터가 없으면 예시 목록으로 표시합니다. 최종 확정은 투표 완료·단독 1위 조건을 유지합니다. 실제 서버 데이터 사용 시 추천이 없으면 E05로 연결합니다. 지도는 식당명·지역 검색 링크입니다.
-- 배달은 최신 Figma대로 배달 서비스 사이트에서 직접 주문하는 방식이며, 검색 딥링크·결제는 연결하지 않습니다.
-- 완료 결과는 세션당 한 번 저장되고 공유도 그 기록을 읽습니다. 새 식사를 시작해도 과거 공유 내용이 바뀌지 않습니다.
-- 초대 코드와 기록 링크 열람은 같은 브라우저에 저장된 데이터 범위입니다. 다른 기기 간 참여·공유는 실제 방/기록 API 연결 후 가능합니다.
-- 다른 팀원의 기존 방·설정·예외 화면은 유지하며, 백엔드 파일은 `origin/develop`과 동일합니다.
+## 현재 백엔드 응답의 제한
+
+- 식당 기록 DTO에는 메뉴·식사 세션 ID가 없습니다. 같은 브라우저에서 저장한 메뉴명은 식당 기록 ID로 결합하며, 다른 기기에서는 서버가 반환한 식당명·주소를 표시합니다.
+- 배달 메뉴 확정 API는 있지만 배달 기록의 날짜별 조회 API는 없습니다. 배달 완료 요약은 현재 브라우저에 보관되며 서버 달력 API에는 매장 식당 기록만 존재합니다.
+- 과거 식사 세션을 ID로 조회하는 API가 없어, 다른 기기에서 오래된 완료 링크의 메뉴·식당 요약을 완전히 복원할 수는 없습니다. 공유 문구에는 확정 결과를 포함합니다.
+- 완료 화면의 클라이언트 요약 캐시는 서버 저장을 대체하지 않습니다. 서버에서 이미 확정된 세션의 중복 확정은 백엔드의 기존 멱등 처리를 따릅니다.
+
+## 변경 범위
+
+백엔드 파일은 수정하지 않습니다. 다른 담당자의 화면 디자인도 유지합니다. 공유 진입점인 `RoomBoundary`, 숫자 방의 `beginMeal`, API 클라이언트만 식사 화면 연결에 필요한 범위에서 수정했습니다.
