@@ -5,6 +5,9 @@ import com.menupick.backend.recommendation.dto.RestaurantConfirmRequest;
 import com.menupick.backend.recommendation.dto.RestaurantConfirmResponse;
 import com.menupick.backend.recommendation.entity.ConfirmedRestaurant;
 import com.menupick.backend.recommendation.repository.ConfirmedRestaurantRepository;
+import com.menupick.backend.room.entity.MealType;
+import com.menupick.backend.room.entity.Room;
+import com.menupick.backend.room.service.RoomService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,11 +21,14 @@ import java.time.ZoneId;
 public class RestaurantConfirmService {
 
     private final ConfirmedRestaurantRepository repository;
+    private final RoomService roomService;
 
     public RestaurantConfirmService(
-            ConfirmedRestaurantRepository repository
+            ConfirmedRestaurantRepository repository,
+            RoomService roomService
     ) {
         this.repository = repository;
+        this.roomService = roomService;
     }
 
     public record ConfirmResult(
@@ -35,13 +41,21 @@ public class RestaurantConfirmService {
             Long roomId,
             RestaurantConfirmRequest request
     ) {
-        if (roomId == null || roomId <= 0) {
+
+        // 1. 실제 존재하는 방인지 검증
+        // 존재하지 않는 방이면 404 반환
+        Room room = roomService.getRoomOrThrow(roomId);
+
+        // 2. 식사 방식 검증
+        // 매장 식사인 경우에만 식당 확정 가능
+        if (room.getMealType() != MealType.DINE_IN) {
             throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "올바른 방 ID를 입력해주세요."
+                    HttpStatus.CONFLICT,
+                    "매장 식사인 경우에만 식당을 확정할 수 있습니다."
             );
         }
 
+        // 3. 거리 정보 검증
         if ("WALKING".equals(request.distanceType())
                 && request.walkingMinutes() == null) {
             throw new ResponseStatusException(
@@ -58,11 +72,12 @@ public class RestaurantConfirmService {
             );
         }
 
+        // 4. 한국 시간 기준 확정 날짜
         LocalDate today = LocalDate.now(
                 ZoneId.of("Asia/Seoul")
         );
 
-        // 오늘 같은 방에서 같은 식당을 확정했는지 조회
+        // 5. 같은 방, 같은 날짜, 같은 식당 중복 확인
         var existing = repository
                 .findByRoomIdAndPlaceIdAndConfirmedDate(
                         roomId,
@@ -70,7 +85,7 @@ public class RestaurantConfirmService {
                         today
                 );
 
-        // 이미 기록이 있다면 추가 저장 없이 정상 반환
+        // 이미 확정한 식당이라면 새 기록을 만들지 않음
         if (existing.isPresent()) {
             return new ConfirmResult(
                     toResponse(existing.get()),
@@ -78,7 +93,7 @@ public class RestaurantConfirmService {
             );
         }
 
-        // 처음 확정한 식당이면 새 기록 저장
+        // 6. 새로운 식당 확정 기록 저장
         ConfirmedRestaurant restaurant =
                 new ConfirmedRestaurant(roomId, request);
 

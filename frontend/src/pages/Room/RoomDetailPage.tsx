@@ -31,9 +31,10 @@ export default function RoomDetailPage({ overlay }: { overlay?: ReactNode }) {
 
   return (
     <div className={`room-setup existing-room${overlay ? ' existing-room--overlay' : ''}`}>
-      <header className="existing-room__header" inert={Boolean(overlay)}>
-        <Link to={`${base}/history`} aria-label="식사 기록"><img src={calendar} alt="" /></Link>
-        <RoomTitle name={name} to={`${base}/settings`} />
+      <header className="existing-room__header existing-room__header--detail" inert={Boolean(overlay)}>
+        <Link className="existing-room__back" to="/home" aria-label="홈으로 돌아가기" />
+        <Link className="existing-room__calendar" to={`${base}/history`} aria-label="식사 기록"><img src={calendar} alt="" /></Link>
+        <RoomTitle name={name} to={`${base}/settings`} showArrow={false} />
         <button type="button" aria-label="방 링크 공유" onClick={shareRoom}><img src={share} alt="" /></button>
       </header>
       <p className="existing-room__feedback" role="status" inert={Boolean(overlay)}>{feedback}</p>
@@ -44,7 +45,8 @@ export default function RoomDetailPage({ overlay }: { overlay?: ReactNode }) {
         <div className="existing-room__divider"><img src={divider} alt="" /></div>
         <p>오늘은 뭘 먹을까요?</p>
       </section>
-      <div className="room-setup__footer" inert={Boolean(overlay)}>
+      <div className="room-setup__footer existing-room__footer" inert={Boolean(overlay)}>
+        <Link className="existing-room__return" to="/home">돌아가기</Link>
         <Link className="room-setup__primary existing-room__primary" to={`${base}/settings`}
           state={{ startMeal: true }}>새로운 식사 선택하기</Link>
       </div>

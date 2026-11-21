@@ -3,6 +3,8 @@ package com.menupick.backend.history.service;
 
 import com.menupick.backend.history.dto.RestaurantHistoryResponse;
 import com.menupick.backend.recommendation.repository.ConfirmedRestaurantRepository;
+import com.menupick.backend.room.service.RoomService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,20 +18,25 @@ import java.util.List;
 public class RestaurantHistoryService {
 
     private final ConfirmedRestaurantRepository repository;
+    private final RoomService roomService;
 
     public RestaurantHistoryService(
-            ConfirmedRestaurantRepository repository
+            ConfirmedRestaurantRepository repository,
+            RoomService roomService
     ) {
         this.repository = repository;
+        this.roomService = roomService;
     }
 
-    // 월별 식당 기록 날짜 조회
+    // 1. 월별 식당 기록 날짜 조회
     public List<LocalDate> getRecordedDates(
             Long roomId,
             int year,
             int month
     ) {
-        validateRoomId(roomId);
+
+        // 실제 존재하는 방인지 검증
+        roomService.getRoomOrThrow(roomId);
 
         YearMonth yearMonth;
 
@@ -57,12 +64,14 @@ public class RestaurantHistoryService {
                 .toList();
     }
 
-    // 선택 날짜의 확정 식당 기록 조회
+    // 2. 선택 날짜의 확정 식당 기록 조회
     public List<RestaurantHistoryResponse> getRestaurantsByDate(
             Long roomId,
             LocalDate date
     ) {
-        validateRoomId(roomId);
+
+        // 실제 존재하는 방인지 검증
+        roomService.getRoomOrThrow(roomId);
 
         if (date == null) {
             throw new ResponseStatusException(
@@ -79,14 +88,5 @@ public class RestaurantHistoryService {
                 .stream()
                 .map(RestaurantHistoryResponse::from)
                 .toList();
-    }
-
-    private void validateRoomId(Long roomId) {
-        if (roomId == null || roomId <= 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "올바르지 않은 방 ID입니다."
-            );
-        }
     }
 }

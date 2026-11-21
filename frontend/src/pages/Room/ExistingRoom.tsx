@@ -13,11 +13,11 @@ export function getRoomSettings(roomId: string): RoomSettings {
   }
 }
 
-export function RoomTitle({ name, to }: { name: string; to: string }) {
+export function RoomTitle({ name, to, showArrow = true }: { name: string; to: string; showArrow?: boolean }) {
   return (
     <Link className="existing-room__title" to={to}>
       <span>{name}</span>
-      <img src={chevron} alt="" width="8" height="14" />
+      {showArrow && <img src={chevron} alt="" width="8" height="14" />}
     </Link>
   )
 }
