@@ -1,6 +1,9 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router'
-import { useRoomStore } from '../../features/room/roomStore'
+import axios from 'axios'
+import { joinRoom } from '../../features/room/roomApi'
+import { useRoomRequest } from '../../features/room/useRoomRequest'
+import { mealErrorCode, mealErrorMessage } from '../../features/meal/mealApi'
 import submitArrow from '../../assets/icons/Vector.svg'
 import codeIcon from '../../assets/icons/andrsrxn_barcode-scan.svg'
 import personIcon from '../../assets/icons/bi_person-circle.svg'
@@ -23,21 +26,37 @@ export function RoomJoinForm({ initialCode = '', initialNickname = '' } = {}) {
   const [nickname, setNickname] = useState(initialNickname)
   const nicknameInput = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
+  const [error, setError] = useState('')
+  const { pending, run } = useRoomRequest()
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const roomCode = code.trim()
     const memberName = nickname.trim()
     if (!roomCode || !memberName) return
-    const room = useRoomStore.getState().joinByCode(roomCode, memberName)
-    if (!room) {
-      void navigate('/error/e02', { state: {
-        returnTo: `/room/select/code?code=${encodeURIComponent(roomCode)}`,
-        returnState: { nickname: memberName },
-      } })
+    const errorState = {
+      returnTo: `/room/select/code?code=${encodeURIComponent(roomCode)}`,
+      returnState: { nickname: memberName },
+    }
+    if (!/^[a-z0-9]{5}$/i.test(roomCode)) {
+      void navigate('/error/e02', { state: errorState })
       return
     }
-    void navigate(`/room/${encodeURIComponent(room.id)}/waiting`)
+    void run(async () => {
+      setError('')
+      try {
+        const room = await joinRoom(roomCode.toUpperCase(), memberName)
+        void navigate(`/room/${room.roomId}/waiting`)
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          void navigate('/error/e02', { state: errorState })
+        } else if (mealErrorCode(error) === 'e06') {
+          void navigate('/error/e06', { state: errorState })
+        } else {
+          setError(mealErrorMessage(error))
+        }
+      }
+    })
   }
 
   return (
@@ -64,12 +83,13 @@ export function RoomJoinForm({ initialCode = '', initialNickname = '' } = {}) {
       <div className="room-join__row">
         <img src={personIcon} alt="" width="13" height="13" />
         <input ref={nicknameInput} name="nickname" aria-label="참여할 닉네임"
-          placeholder="참여할 닉네임을 입력해주세요." autoComplete="nickname" required
+          placeholder="참여할 닉네임을 입력해주세요." autoComplete="nickname" maxLength={10} required
           value={nickname} onChange={(event) => setNickname(event.target.value)} />
-        <button type="submit" aria-label="방 참여하기" disabled={!code.trim() || !nickname.trim()}>
+        <button type="submit" aria-label="방 참여하기" disabled={pending || !code.trim() || !nickname.trim()}>
           <img src={submitArrow} alt="" width="11" height="8" />
         </button>
       </div>
+      {error && <p role="alert">{error}</p>}
     </form>
   )
 }

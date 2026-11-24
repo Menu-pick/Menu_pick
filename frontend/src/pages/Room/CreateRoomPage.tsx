@@ -1,19 +1,25 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import './CreateRoomPage.css'
-import { useRoomStore, type RoomSettings } from '../../features/room/roomStore'
+import type { RoomSettings } from '../../features/room/roomStore'
+import { categories, createRoom, type RoomPlace } from '../../features/room/roomApi'
+import RoomPlaceInput from '../../features/room/RoomPlaceInput'
+import { useRoomRequest } from '../../features/room/useRoomRequest'
+import { mealErrorCode, mealErrorMessage } from '../../features/meal/mealApi'
 
-const categories = ['한식', '중식', '일식', '카페,디저트', '패스트푸드', '분식']
 const mealModes = ['매장', '배달'] as const
 
 let savedDraft: RoomSettings = { name: '', location: '', mealMode: '매장', categories: [] }
 let savedNickname = ''
+let savedPlace: RoomPlace | null = null
 
 export default function CreateRoomPage() {
   const [settings, setSettings] = useState(savedDraft)
   const [nickname, setNickname] = useState(savedNickname)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const [place, setPlace] = useState(savedPlace)
+  const { pending, run } = useRoomRequest()
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -29,10 +35,25 @@ export default function CreateRoomPage() {
       return
     }
 
-    savedDraft = { ...settings, name, location }
-    savedNickname = memberName
-    const room = useRoomStore.getState().createRoom(savedDraft, savedNickname)
-    void navigate(`/room/${encodeURIComponent(room.id)}/waiting`, { state: { fromCreate: true } })
+    if (memberName.length > 10 || !place || !settings.categories.length) {
+      setError(memberName.length > 10 ? '닉네임은 10자 이내로 입력해주세요.' :
+        !place ? '검색 결과에서 식사 장소를 선택해주세요.' : '음식 카테고리를 하나 이상 선택해주세요.')
+      return
+    }
+
+    void run(async () => {
+      savedDraft = { ...settings, name, location }
+      savedNickname = memberName
+      savedPlace = place
+      setError('')
+      try {
+        const room = await createRoom(savedDraft, place, memberName)
+        void navigate(`/room/${room.roomId}/waiting`, { state: { fromCreate: true } })
+      } catch (error) {
+        if (mealErrorCode(error) === 'e06') void navigate('/error/e06', { state: { returnTo: '/room/create' } })
+        else setError(mealErrorMessage(error))
+      }
+    })
   }
 
   return (
@@ -49,14 +70,12 @@ export default function CreateRoomPage() {
         </label>
         <label>
           내 닉네임
-          <input name="nickname" placeholder="참여할 닉네임을 입력해주세요." autoComplete="nickname" required
+          <input name="nickname" placeholder="참여할 닉네임을 입력해주세요." autoComplete="nickname" maxLength={10} required
             value={nickname} onChange={(event) => setNickname(event.target.value)} />
         </label>
-        <label>
-          식사 장소
-          <input name="location" placeholder="장소를 선택해주세요." required
-            value={settings.location} onChange={(event) => setSettings({ ...settings, location: event.target.value })} />
-        </label>
+        <RoomPlaceInput value={settings.location} place={place}
+          onChange={location => { setPlace(null); setSettings({ ...settings, location }) }}
+          onSelect={choice => { setPlace(choice); setSettings({ ...settings, location: choice.name }) }} />
         <fieldset>
           <legend>식사 방식</legend>
           <div className="room-create-page__options">
@@ -89,7 +108,7 @@ export default function CreateRoomPage() {
         </fieldset>
         <div className="room-setup__footer">
           {error && <p role="alert">{error}</p>}
-          <button className="room-setup__primary" type="submit">변경사항 저장</button>
+          <button className="room-setup__primary" type="submit" disabled={pending}>변경사항 저장</button>
         </div>
       </form>
     </div>

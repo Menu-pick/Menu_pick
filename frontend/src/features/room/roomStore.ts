@@ -25,8 +25,6 @@ function members(count: number, nickname = '박채희'): Participant[] {
   }))
 }
 const initialRooms: Record<string, LocalRoom> = {
-  '1': { id: '1', code: 'B4P1K', settings: { name: '덕성 멋사 뭐 먹지?', location: '덕성여대 근처', mealMode: '매장', categories: [] }, members: members(4), currentParticipantId: 'member-1', demo: true },
-  '2': { id: '2', code: 'TEAM02', settings: { name: '팀 회식 메뉴 정하기', location: '강남역 근처', mealMode: '매장', categories: [] }, members: members(6), currentParticipantId: 'member-1', demo: true },
   demo: { id: 'demo', code: 'DEMO01', settings: { name: '덕성 멋사 뭐 먹지?', location: '덕성여대 근처', mealMode: '매장', categories: [] }, members: members(4), currentParticipantId: 'member-1', demo: true, hidden: true },
 }
 
@@ -39,26 +37,13 @@ export function mealOptions(settings: RoomSettings) {
 
 type RoomState = {
   rooms: Record<string, LocalRoom>
-  createRoom: (settings: RoomSettings, nickname: string) => LocalRoom
   saveSettings: (roomId: string, settings: RoomSettings) => void
-  joinByCode: (code: string, nickname: string) => LocalRoom | undefined
   beginMeal: (roomId: string) => 'ok' | 'missing' | 'waiting' | 'unavailable'
 }
 
-// Local demonstration only. Replace room creation/join and mock members when the room API exists.
+// Shared room cache with local fixtures for preview routes.
 export const useRoomStore = create<RoomState>()(persist((set, get) => ({
   rooms: initialRooms,
-  createRoom: (settings, nickname) => {
-    const id = crypto.randomUUID()
-    let code: string
-    do {
-      code = Array.from(crypto.getRandomValues(new Uint8Array(6)), value => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[value % 32]).join('')
-    } while (Object.values(get().rooms).some(room => room.code === code))
-    const room: LocalRoom = { id, code, settings, members: members(4, nickname), currentParticipantId: 'member-1', demo: true }
-    set(state => ({ rooms: { ...state.rooms, [id]: room } }))
-    useMealStore.getState().configureRoom(id, mealOptions(settings), room.members, room.demo)
-    return room
-  },
   saveSettings: (roomId, settings) => {
     const room = get().rooms[roomId]
     if (!room) return
@@ -67,26 +52,10 @@ export const useRoomStore = create<RoomState>()(persist((set, get) => ({
     const meal = useMealStore.getState()
     if (!meal.rooms[roomId]?.started || meal.rooms[roomId]?.completedRecordId) meal.configureRoom(roomId, mealOptions(settings))
   },
-  joinByCode: (code, nickname) => {
-    const normalizedCode = code.trim().toUpperCase()
-    const room = Object.values(get().rooms).find(room => room.code === normalizedCode)
-    if (!room) return
-
-    const joinedRoom = {
-      ...room,
-      members: room.members.map(member => member.id === room.currentParticipantId
-        ? { ...member, name: nickname }
-        : member),
-    }
-    set(state => ({ rooms: { ...state.rooms, [room.id]: joinedRoom } }))
-    return joinedRoom
-  },
   beginMeal: roomId => {
     const room = get().rooms[roomId]
     if (!room) return 'missing'
     if (room.members.length < 2) return 'waiting'
-    // Numeric IDs belong to the backend; RoulettePage's API boundary draws the session.
-    if (/^[1-9]\d*$/.test(roomId)) return 'ok'
     const meal = useMealStore.getState()
     meal.configureRoom(roomId, mealOptions(room.settings), room.members, room.demo)
     meal.setCurrentParticipant(roomId, room.currentParticipantId)
