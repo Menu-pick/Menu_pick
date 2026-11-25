@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import cancel from '../../assets/icons/iconoir_xmark-circle.svg'
 import check from '../../assets/icons/akar-icons_circle-check.svg'
 import { getRoomSettings, RoomTitle } from './ExistingRoom'
@@ -8,7 +8,6 @@ import { isApiRoom, mealErrorCode, mealErrorMessage, useMealAccess } from '../..
 import { MealScreen } from '../../features/meal/MealUI'
 import { categories, getRoom, roomPlace, roomSettings, updateRoom, type RoomResponse } from '../../features/room/roomApi'
 import RoomPlaceInput from '../../features/room/RoomPlaceInput'
-import { startRoomMeal } from '../../features/room/startRoomMeal'
 import { useRoomRequest } from '../../features/room/useRoomRequest'
 import './CreateRoomPage.css'
 import './ExistingRoom.css'
@@ -17,6 +16,10 @@ const mealModes = ['매장', '배달'] as const
 
 export default function RoomSettingsPage() {
   const { roomId = '' } = useParams()
+  const { search, state } = useLocation()
+  if (new URLSearchParams(search).get('mode') === 'start-meal' || state?.startMeal === true) {
+    return <Navigate to={`/room/${encodeURIComponent(roomId)}`} replace />
+  }
   if (isApiRoom(roomId)) return <ServerSettings key={roomId} roomId={roomId} />
   return <RoomSettingsForm key={roomId} roomId={roomId} />
 }
@@ -24,7 +27,6 @@ export default function RoomSettingsPage() {
 function ServerSettings({ roomId }: { roomId: string }) {
   const [room, setRoom] = useState<RoomResponse>()
   const navigate = useNavigate()
-  const { state } = useLocation()
   useEffect(() => {
     const controller = new AbortController()
     getRoom(roomId, controller.signal).then(data => {
@@ -34,11 +36,10 @@ function ServerSettings({ roomId }: { roomId: string }) {
       const code = mealErrorCode(error)
       void navigate(`/error/${code}`, { replace: true, state: {
         returnTo: code === 'e01' ? '/home' : `/room/${roomId}/settings`,
-        returnState: state,
       } })
     })
     return () => controller.abort()
-  }, [roomId, navigate, state])
+  }, [roomId, navigate])
   if (!room) return <MealScreen><p role="status">방 설정을 불러오고 있어요.</p></MealScreen>
   return <RoomSettingsForm roomId={roomId} serverRoom={room} />
 }
@@ -49,7 +50,6 @@ function RoomSettingsForm({ roomId, serverRoom }: { roomId: string; serverRoom?:
   const { pending, run } = useRoomRequest()
   const [error, setError] = useState('')
   const navigate = useNavigate()
-  const { state } = useLocation()
   const base = `/room/${encodeURIComponent(roomId)}`
 
   function save(event: FormEvent<HTMLFormElement>) {
@@ -77,37 +77,19 @@ function RoomSettingsForm({ roomId, serverRoom }: { roomId: string; serverRoom?:
         setError('')
         try {
           await updateRoom(roomId, updatedSettings, place, access.nickname, access.participantToken)
-          if (state?.startMeal === true) {
-            await startRoomMeal(roomId)
-            void navigate(`${base}/roulette`, { replace: true })
-          } else {
-            void navigate(base, { replace: true })
-          }
+          void navigate(base, { replace: true })
         } catch (error) {
           const failure = mealErrorCode(error)
           if (failure === 'e07') setError(mealErrorMessage(error))
           else void navigate(`/error/${failure}`, { state: {
             roomCode: code,
             returnTo: failure === 'e02' ? joinLink : failure === 'e01' ? '/home' : `${base}/settings`,
-            returnState: failure === 'e06' ? state : undefined,
           } })
         }
       })
       return
     }
     useRoomStore.getState().saveSettings(roomId, updatedSettings)
-    if (state?.startMeal === true) {
-      const result = useRoomStore.getState().beginMeal(roomId)
-      if (result !== 'ok') {
-        void navigate(result === 'waiting' ? '/error/e03' : '/error/e07', { state: { returnTo: `${base}/settings`, returnState: { startMeal: true }, roomCode: useRoomStore.getState().rooms[roomId]?.code } })
-        return
-      }
-      void navigate(`${base}/roulette`, {
-        replace: true,
-        state: { existingRoomSettings: updatedSettings },
-      })
-      return
-    }
     void navigate(base, { replace: true })
   }
 
