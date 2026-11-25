@@ -1,3 +1,7 @@
+.mobile-layout:has(> .exception-page) {
+  scrollbar-width: none;
+}
+
 .exception-page {
   --exception-text-secondary: #8a7265;
   align-items: center;
@@ -104,6 +108,15 @@
   font: 400 16px / 22px 'Jua', sans-serif;
   text-decoration: none;
   cursor: pointer;
+}
+
+.exception-page__home {
+  display: grid;
+  min-height: 44px;
+  margin-top: 8px;
+  place-items: center;
+  color: inherit;
+  font: 400 16px / 22px 'Jua', sans-serif;
 }
 
 .exception-page--development .exception-page__art {
