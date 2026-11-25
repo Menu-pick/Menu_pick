@@ -1,6 +1,11 @@
-import { useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { useLocalRoom, useRoomStore } from '../../features/room/roomStore'
+import { isApiRoom, mealErrorCode, mealErrorMessage } from '../../features/meal/mealApi'
+import { assets } from '../../features/meal/assets'
+import { listParticipants } from '../../features/room/roomApi'
+import { startRoomMeal } from '../../features/room/startRoomMeal'
+import { useRoomRequest } from '../../features/room/useRoomRequest'
 import copyIcon from '../../assets/icons/copy.svg'
 import forkSpoon from '../../assets/icons/ForkSpoon.png'
 import './CreateRoomPage.css'
@@ -8,7 +13,9 @@ import './WaitingRoomPage.css'
 
 export default function WaitingRoomPage() {
   const [feedback, setFeedback] = useState('')
-  const mealStartRequested = useRef(false)
+  const { pending, run } = useRoomRequest()
+  const [error, setError] = useState('')
+  const [pollError, setPollError] = useState('')
   const location = useLocation()
   const navigate = useNavigate()
   const { roomId = '' } = useParams()
@@ -16,33 +23,58 @@ export default function WaitingRoomPage() {
   const roomCode = room?.code ?? ''
   const members = room?.members ?? []
 
+  useEffect(() => {
+    if (!isApiRoom(roomId)) return
+    const controller = new AbortController()
+    let timer: number
+    async function poll() {
+      try {
+        const participants = await listParticipants(roomId, controller.signal)
+        if (controller.signal.aborted) return
+        useRoomStore.setState(state => {
+          const current = state.rooms[roomId]
+          if (!current) return state
+          const members = participants.map(member => ({ id: String(member.participantId), name: member.nickname, image: assets.result.imgEllipse7 }))
+          return { rooms: { ...state.rooms, [roomId]: { ...current, members } } }
+        })
+        setPollError('')
+      } catch (error) {
+        if (controller.signal.aborted) return
+        if (mealErrorCode(error) === 'e01') {
+          void navigate('/error/e01', { replace: true, state: { returnTo: '/home' } })
+          return
+        }
+        setPollError(mealErrorMessage(error))
+      }
+      if (!controller.signal.aborted) timer = window.setTimeout(poll, 3000)
+    }
+    timer = window.setTimeout(poll, 3000)
+    return () => { controller.abort(); window.clearTimeout(timer) }
+  }, [roomId, navigate])
+
   function startMeal() {
-    if (mealStartRequested.current) return
-    mealStartRequested.current = true
-    if (!roomId || room?.id !== roomId) {
-      void navigate('/error/e01')
-      return
-    }
-
-    const roomPath = `/room/${encodeURIComponent(roomId)}`
-    const errorState = { roomCode, returnTo: `${roomPath}/settings`, returnState: { startMeal: true } }
-    let result: ReturnType<ReturnType<typeof useRoomStore.getState>['beginMeal']>
-    try {
-      result = useRoomStore.getState().beginMeal(roomId)
-    } catch {
-      void navigate('/error/e07', { state: errorState })
-      return
-    }
-
-    if (result === 'missing') {
-      void navigate('/error/e01')
-      return
-    }
-    if (result !== 'ok') {
-      void navigate(result === 'waiting' ? '/error/e03' : '/error/e07', { state: errorState })
-      return
-    }
-    void navigate(`${roomPath}/roulette`)
+    const base = `/room/${roomId}`
+    void run(async () => {
+      setError('')
+      if (!isApiRoom(roomId)) {
+        const result = useRoomStore.getState().beginMeal(roomId)
+        if (result === 'ok') void navigate(`${base}/roulette`)
+        else void navigate(result === 'waiting' ? '/error/e03' : '/error/e07', { state: { roomCode, returnTo: `${base}/waiting` } })
+        return
+      }
+      try {
+        await startRoomMeal(roomId)
+        void navigate(`${base}/roulette`)
+      } catch (error) {
+        const code = mealErrorCode(error)
+        if (code === 'e07') setError(mealErrorMessage(error))
+        else void navigate(`/error/${code}`, { state: {
+          roomCode,
+          returnTo: code === 'e02' ? `/room/select/code?code=${encodeURIComponent(roomCode)}` :
+            code === 'e01' ? '/home' : `${base}/waiting`,
+        } })
+      }
+    })
   }
 
   async function copyCode() {
@@ -95,7 +127,7 @@ export default function WaitingRoomPage() {
         <p className="room-waiting-page__feedback" role="status">{feedback}</p>
       </section>
       <section className="room-waiting-page__card room-waiting-page__members">
-        <h2>참여 중인 멤버</h2>
+        <h2>참여 중인 멤버 {members.length}명</h2>
         <ul>
           {members.map((member) => (
             <li key={member.id}>
@@ -110,7 +142,8 @@ export default function WaitingRoomPage() {
         <p>친구들이 모였다면 메뉴후보를 뽑을까요?</p>
       </section>
       <div className="room-setup__footer">
-        <button className="room-setup__primary" type="button" onClick={startMeal}>메뉴 후보 뽑기</button>
+        {(error || pollError) && <p role="alert">{error || pollError}</p>}
+        <button className="room-setup__primary" type="button" disabled={pending} onClick={startMeal}>메뉴 후보 뽑기</button>
       </div>
     </div>
   )

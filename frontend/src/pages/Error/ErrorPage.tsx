@@ -87,7 +87,7 @@ function ExceptionScreen({ variant }: { variant: keyof typeof exceptions }) {
       <footer className="exception-page__footer">
         {feedback && <p className="exception-page__hint" role="status">{feedback}</p>}
         {'to' in screen
-          ? <Link className="exception-page__action" to={returnTo ?? screen.to}>{screen.label}</Link>
+          ? <Link className="exception-page__action" to={variant === 'e01' ? screen.to : returnTo ?? screen.to} state={state?.returnState}>{screen.label}</Link>
           : <button className="exception-page__action" type="button" onClick={handleAction}>{screen.label}</button>}
       </footer>
     </div>

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
+import { useLocalRoom } from '../../features/room/roomStore'
 import calendar from '../../assets/icons/akar-icons_calendar.svg'
 import share from '../../assets/icons/basil_share-box-outline.svg'
 import utensils from '../../assets/images/Bigforkspoon.png'
@@ -13,11 +14,14 @@ export default function RoomDetailPage({ overlay }: { overlay?: ReactNode }) {
   const base = `/room/${encodeURIComponent(roomId)}`
   const settings = getRoomSettings(roomId)
   const { name } = settings
+  const room = useLocalRoom(roomId)
   const [feedback, setFeedback] = useState('')
 
   async function shareRoom() {
     try {
-      const url = window.location.href
+      const invite = new URL('/room/select/code', window.location.origin)
+      if (room?.code) invite.searchParams.set('code', room.code)
+      const url = room?.demo ? window.location.href : invite.href
       if (navigator.share) await navigator.share({ title: name, url })
       else {
         await navigator.clipboard.writeText(url)
