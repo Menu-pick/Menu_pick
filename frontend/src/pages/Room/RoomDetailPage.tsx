@@ -1,6 +1,9 @@
 import { useState, type ReactNode } from 'react'
-import { Link, useParams } from 'react-router'
-import { useLocalRoom } from '../../features/room/roomStore'
+import { Link, useNavigate, useParams } from 'react-router'
+import { isApiRoom, mealErrorCode, mealErrorMessage, MealApiError } from '../../features/meal/mealApi'
+import { useLocalRoom, useRoomStore } from '../../features/room/roomStore'
+import { startRoomMeal } from '../../features/room/startRoomMeal'
+import { useRoomRequest } from '../../features/room/useRoomRequest'
 import calendar from '../../assets/icons/akar-icons_calendar.svg'
 import share from '../../assets/icons/basil_share-box-outline.svg'
 import utensils from '../../assets/images/Bigforkspoon.png'
@@ -16,6 +19,37 @@ export default function RoomDetailPage({ overlay }: { overlay?: ReactNode }) {
   const { name } = settings
   const room = useLocalRoom(roomId)
   const [feedback, setFeedback] = useState('')
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
+  const { pending, run } = useRoomRequest()
+
+  function selectMeal() {
+    void run(async () => {
+      setError('')
+      try {
+        if (isApiRoom(roomId)) {
+          await startRoomMeal(roomId)
+        } else {
+          const result = useRoomStore.getState().beginMeal(roomId)
+          if (result === 'waiting') throw new MealApiError('e03', '친구가 참여하면 메뉴 후보를 뽑을 수 있어요.')
+          if (result !== 'ok') throw new MealApiError('e07', '메뉴 후보를 뽑지 못했어요.')
+        }
+        void navigate(`${base}/roulette`)
+      } catch (error) {
+        const code = mealErrorCode(error)
+        if (code === 'e07') {
+          setError(mealErrorMessage(error))
+          return
+        }
+        const roomCode = room?.code ?? ''
+        const joinLink = `/room/select/code?code=${encodeURIComponent(roomCode)}`
+        void navigate(`/error/${code}`, { state: {
+          roomCode,
+          returnTo: code === 'e02' ? joinLink : code === 'e01' ? '/home' : base,
+        } })
+      }
+    })
+  }
 
   async function shareRoom() {
     try {
@@ -51,8 +85,10 @@ export default function RoomDetailPage({ overlay }: { overlay?: ReactNode }) {
       </section>
       <div className="room-setup__footer existing-room__footer" inert={Boolean(overlay)}>
         <Link className="existing-room__return" to="/home">돌아가기</Link>
-        <Link className="room-setup__primary existing-room__primary" to={`${base}/settings`}
-          state={{ startMeal: true }}>새로운 식사 선택하기</Link>
+        {error && <p role="alert">{error}</p>}
+        <button className="room-setup__primary existing-room__primary" type="button" disabled={pending} onClick={selectMeal}>
+          {pending ? '식사 정보를 불러오는 중…' : '새로운 식사 선택하기'}
+        </button>
       </div>
       {overlay}
     </div>
