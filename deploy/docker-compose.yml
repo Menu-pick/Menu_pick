@@ -1,0 +1,51 @@
+# 서버(~/bobpick)에서 실행되는 파일. GitHub Actions가 배포 때마다 이 파일을 서버로 복사합니다.
+services:
+  nginx:
+    image: nginx:1.27
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+    volumes:
+      # NGINX_CONF=http (인증서 받기 전) / https (인증서 받은 후)
+      - ./nginx/${NGINX_CONF:-http}.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    image: ${DOCKERHUB_USERNAME}/bobpick-backend:${BACKEND_TAG:-latest}
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      TZ: Asia/Seoul
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: menupick
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      TZ: Asia/Seoul
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  db-data:
