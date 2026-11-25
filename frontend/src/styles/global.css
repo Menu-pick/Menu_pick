@@ -1,0 +1,55 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+button, input {
+  font: inherit;
+}
+
+.mobile-layout {
+  --app-height: min(874px, 100dvh);
+  max-width: 480px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: 1rem;
+  display: flow-root;
+}
+
+#root:has(> .mobile-layout > :is(.splash-page, .home-page, .room-setup, .meal-screen)) {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: #eee;
+}
+
+.mobile-layout:has(> :is(.splash-page, .home-page, .room-setup, .meal-screen)) {
+  width: min(100%, 402px);
+  max-width: none;
+  height: min(874px, 100dvh);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden auto;
+  background: #fdf8f0;
+}
+
+.mobile-layout:has(> :is(.home-page:not(.room-selection-page), .room-create-page:not(.existing-room))) {
+  scrollbar-width: none;
+}
+
+.mobile-layout:has(> :is(.home-page:not(.room-selection-page), .room-create-page:not(.existing-room)))::-webkit-scrollbar {
+  display: none;
+}
+
+.bottom-sheet {
+  position: fixed;
+  inset: auto 0 0;
+  width: min(100%, 480px);
+  margin: 0 auto;
+}

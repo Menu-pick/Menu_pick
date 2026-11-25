@@ -1,0 +1,60 @@
+import { useState, type ReactNode } from 'react'
+import { Link, useParams } from 'react-router'
+import { useLocalRoom } from '../../features/room/roomStore'
+import calendar from '../../assets/icons/akar-icons_calendar.svg'
+import share from '../../assets/icons/basil_share-box-outline.svg'
+import utensils from '../../assets/images/Bigforkspoon.png'
+import divider from '../../assets/icons/ForkSpoon.png'
+import { getRoomSettings, RoomTitle } from './ExistingRoom'
+import './CreateRoomPage.css'
+import './ExistingRoom.css'
+
+export default function RoomDetailPage({ overlay }: { overlay?: ReactNode }) {
+  const { roomId = '' } = useParams()
+  const base = `/room/${encodeURIComponent(roomId)}`
+  const settings = getRoomSettings(roomId)
+  const { name } = settings
+  const room = useLocalRoom(roomId)
+  const [feedback, setFeedback] = useState('')
+
+  async function shareRoom() {
+    try {
+      const invite = new URL('/room/select/code', window.location.origin)
+      if (room?.code) invite.searchParams.set('code', room.code)
+      const url = room?.demo ? window.location.href : invite.href
+      if (navigator.share) await navigator.share({ title: name, url })
+      else {
+        await navigator.clipboard.writeText(url)
+        setFeedback('방 링크를 복사했어요.')
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      setFeedback('방 링크를 공유하지 못했어요.')
+    }
+  }
+
+  return (
+    <div className={`room-setup existing-room${overlay ? ' existing-room--overlay' : ''}`}>
+      <header className="existing-room__header existing-room__header--detail" inert={Boolean(overlay)}>
+        <Link className="existing-room__back" to="/home" aria-label="홈으로 돌아가기" />
+        <Link className="existing-room__calendar" to={`${base}/history`} aria-label="식사 기록"><img src={calendar} alt="" /></Link>
+        <RoomTitle name={name} to={`${base}/settings`} showArrow={false} />
+        <button type="button" aria-label="방 링크 공유" onClick={shareRoom}><img src={share} alt="" /></button>
+      </header>
+      <p className="existing-room__feedback" role="status" inert={Boolean(overlay)}>{feedback}</p>
+      <section className="existing-room__card" inert={Boolean(overlay)}>
+        <div className="existing-room__utensils" aria-hidden="true">
+          <img src={utensils} alt="" />
+        </div>
+        <div className="existing-room__divider"><img src={divider} alt="" /></div>
+        <p>오늘은 뭘 먹을까요?</p>
+      </section>
+      <div className="room-setup__footer existing-room__footer" inert={Boolean(overlay)}>
+        <Link className="existing-room__return" to="/home">돌아가기</Link>
+        <Link className="room-setup__primary existing-room__primary" to={`${base}/settings`}
+          state={{ startMeal: true }}>새로운 식사 선택하기</Link>
+      </div>
+      {overlay}
+    </div>
+  )
+}
